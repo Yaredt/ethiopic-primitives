@@ -1,5 +1,7 @@
 # Ethiopic Primitives
 
+[![conformance](https://github.com/Yaredt/ethiopic-primitives/actions/workflows/conformance.yml/badge.svg)](https://github.com/Yaredt/ethiopic-primitives/actions/workflows/conformance.yml)
+
 Deterministic, model-free primitives for the Ethiopian calendar, fiscal periods,
 Ge'ez numerals, and Ge'ez-script equivalence.
 
