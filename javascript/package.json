@@ -1,0 +1,33 @@
+{
+  "name": "@ethiopic-primitives/calendar",
+  "version": "0.1.0",
+  "description": "Deterministic Ethiopian calendar conversion primitives. Layer 0: pure functions, no model calls, no network.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test --experimental-strip-types \"test/**/*.test.ts\"",
+    "vectors": "node --experimental-strip-types test/run_vectors.ts",
+    "sweep": "node --experimental-strip-types test/run_sweep.ts",
+    "fiscal-vectors": "node --experimental-strip-types test/run_fiscal_vectors.ts",
+    "numerals-vectors": "node --experimental-strip-types test/run_numerals_vectors.ts"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

@@ -1,0 +1,3 @@
+# Constitution Principle I: vectors are authored, never agent-generated.
+/tests/vectors/            @OWNER
+/.specify/memory/constitution.md  @OWNER

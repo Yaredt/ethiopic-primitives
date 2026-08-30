@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ethiopic-primitives"
+version = "0.1.0"
+description = "Deterministic Ethiopian calendar primitives. Layer 0: a thin, verified wrapper over py-ethiopian-date-converter (Constitution Principle III)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = [
+    # Principle III: calendar conversion is a DEPENDENCY, never reimplemented.
+    # py-ethiopian-date-converter passed 16,801/16,801 days in the prior-art sweep.
+    "py-ethiopian-date-converter==0.1.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,78 @@
+name: conformance
+on: [push, pull_request]
+
+jobs:
+  # Constitution Principle I — fixtures must not be modified by implementation work.
+  vectors-immutable:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Fail if tests/vectors/ was modified
+        if: github.event_name == 'pull_request'
+        run: |
+          if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q '^tests/vectors/'; then
+            echo "::error::Principle I violation: tests/vectors/ modified. Fixtures are authored, never generated."
+            exit 1
+          fi
+          echo "OK: vectors untouched"
+
+  # Constitution Principle II — every gating vector needs external provenance.
+  provenance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tools/check_provenance.py
+
+  # Constitution Principle IX — a green suite is not evidence; full sweep required.
+  full-sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install py-ethiopian-date-converter
+      - run: python3 tools/full_sweep.py --from 1990 --to 2035
+
+  # JavaScript implementation — the primary deliverable (the maintained JS option
+  # is 48.9% wrong). Must pass every vector, the Principle IX sweep, build, and unit tests.
+  javascript:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: javascript
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: npm install
+      - run: npm run vectors
+      - run: npm run sweep
+      - run: npm run fiscal-vectors
+      - run: npm run build
+      - run: npm test
+
+  # Python implementation — a thin wrapper over py-ethiopian-date-converter
+  # (Principle III). Same vectors, same sweep.
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install py-ethiopian-date-converter==0.1.1
+      - run: python python/tests/run_vectors.py
+      - run: python python/tests/run_sweep.py --from 1990 --to 2035
+      - run: python python/tests/run_fiscal_vectors.py
+      - run: python -m unittest discover -s python/tests -p "test_*.py"
+
+  # Constitution Principle X — both languages must run the same vectors and agree
+  # on the gating set. Divergence is a release blocker.
+  cross-language:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install py-ethiopian-date-converter==0.1.1
+      - run: python tools/cross_runner.py
