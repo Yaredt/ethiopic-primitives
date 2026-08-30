@@ -5,6 +5,13 @@ Ge'ez numerals, and Ge'ez-script equivalence.
 
 ## Status
 
+**Pre-1.0 — work in progress, not yet released.** Three Layer-0 modules are
+implemented and cross-language-verified, but the conformance fixtures and a Tier-1
+provenance source are still outstanding, so **nothing is published to npm or PyPI
+yet** and no version is tagged (Principle II). The code is public to invite review
+and — importantly — external authorship of the conformance vectors (Principle I
+forbids the maintainers authoring them).
+
 **Correctness core landed.** The calendar layer is implemented in both languages
 and passes all 181 gating vectors plus the 1990–2035 sweep, both directions, with
 zero mismatches — in JavaScript, in the Python wrapper, and across both together.
@@ -19,7 +26,14 @@ zero mismatches — in JavaScript, in the Python wrapper, and across both togeth
   (label / period numbering / Pagumē's quarter) are informed defaults awaiting a
   Tier-1 source; acceptance is gated by an externally authored
   `tests/vectors/fiscal.json` that does not exist yet.
-- Ge'ez numerals and the equivalence engine are **not yet built**.
+- **Ge'ez numerals** (feature 003) are implemented in both languages —
+  bidirectional Arabic↔Ge'ez over 1–99,999,999, canonical rendering (leading-1
+  omission), strict round-trip parse, and Arabic-default money, byte-identical
+  across JS and Python. The closed domain is enforced: no zero, negative, or
+  fraction (Principle VII). Acceptance is gated by an externally authored
+  `tests/vectors/numerals.json` (not yet present) plus a package-measurement
+  step (Principle III).
+- The **Ge'ez-script equivalence engine** (folding) is **not yet built**.
 
 Public release remains blocked by Principle II until a Tier-1 source is added
 (see below).
@@ -35,8 +49,8 @@ A prior-art survey found calendar conversion is implemented many times over, but
 | Ethio-Intl (TS) | **48.9% of days wrong** | incorrect | dead 8 months |
 
 Python is solved — depend on it, do not rebuild (Principle III). The gaps are
-JS/TS conversion, **fiscal logic** (absent everywhere), and the **equivalence
-engine** (absent everywhere).
+JS/TS conversion, **fiscal logic** and **Ge'ez numerals** (both absent elsewhere,
+now implemented here), and the **equivalence engine** (still absent everywhere).
 
 ## Repo layout
 
@@ -44,15 +58,19 @@ engine** (absent everywhere).
 .specify/memory/constitution.md   governance — read this first
 tests/vectors/calendar.json       182 vectors; 181 gating, ICU-corroborated
 tests/vectors/fiscal.json         (pending) authored fiscal vectors — gates feature 002
-javascript/                       TypeScript calendar + fiscal implementation + runners
-python/                           thin wrapper (calendar) + fiscal logic
+tests/vectors/numerals.json       (pending) authored numeral vectors — gates feature 003
+javascript/                       TypeScript calendar + fiscal + numerals + runners
+python/                           thin wrapper (calendar) + fiscal + numerals
 tools/reference_ethiopic.py       reference implementation
 tools/check_provenance.py         Principle II gate
 tools/full_sweep.py               Principle IX gate (reference oracle)
 tools/fiscal_parity.py            Principle X — JS vs Python fiscal agreement (pre-fixture)
+tools/numerals_parity.py          Principle X — JS vs Python numeral agreement (pre-fixture)
+tools/check_no_authored_numerals.py  Principle I / SC-006 — no authored glyphs in tests
 tools/cross_runner.py             Principle X — runs both languages, checks agreement
 specs/001-calendar-core/          calendar feature — spec, plan, tasks, design docs
 specs/002-fiscal-logic/           fiscal feature — spec, plan, tasks, design docs
+specs/003-geez-numerals/          numerals feature — spec, plan, tasks, design docs
 ```
 
 ## Working on this
