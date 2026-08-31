@@ -22,7 +22,8 @@
     "vectors": "node --experimental-strip-types test/run_vectors.ts",
     "sweep": "node --experimental-strip-types test/run_sweep.ts",
     "fiscal-vectors": "node --experimental-strip-types test/run_fiscal_vectors.ts",
-    "numerals-vectors": "node --experimental-strip-types test/run_numerals_vectors.ts"
+    "numerals-vectors": "node --experimental-strip-types test/run_numerals_vectors.ts",
+    "equivalence-vectors": "node --experimental-strip-types test/run_equivalence_vectors.ts"
   },
   "engines": {
     "node": ">=22"

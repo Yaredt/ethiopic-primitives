@@ -77,6 +77,33 @@ of `toGeez`); a valid-but-non-canonical spelling raises `reason: "non_canonical"
 Conformance values are owned by the external `tests/vectors/numerals.json`
 (Principle I), not by this code.
 
+## Ge'ez-script equivalence & folding
+
+Per-language homophone folding for search/index equivalence, honoring the
+non-negotiable Principle IV (explicit language) and Principle V (immutable source).
+
+```ts
+import { fold, equal, foldedEqual, Language, FoldScheme, EquivalenceError } from "@ethiopic-primitives/calendar";
+
+// Fold an Amharic string to an index key. Length-preserving 1:1; the original is untouched.
+const r = fold(text, Language.AMHARIC, FoldScheme.HSL);
+r.folded;   // the folded key   r.offsets;  // per-position map back to the source   r.scheme;   // "HSL"
+
+equal(a, b, Language.GE_EZ);                 // non-lossy compare — valid for Ge'ez
+foldedEqual(a, b, Language.AMHARIC, FoldScheme.H_ONLY); // do a & b collate under H_ONLY?
+
+fold(text, Language.GE_EZ, FoldScheme.HSL);  // throws EquivalenceError { reason: "geez_not_foldable" }
+fold(text, Language.TIGRINYA, FoldScheme.HSL); // throws "tigrinya_requires_ack" — Tigrinya glottals are distinct
+fold(text, Language.TIGRINYA, FoldScheme.HSL, { acknowledgeLossy: true }); // proceeds, tagged HSL
+```
+
+Language is **required** — no default, no inference. `GE_EZ` never folds; `TIGRINYA`
+needs an explicit lossy acknowledgement. **Ingestion rule (Principle V):** folding is
+for index-key/metric use only — corpora, stored documents, and training data retain
+raw text and are never folded at ingestion. Exact class membership is owned by the
+external `tests/vectors/folding.json` (Principle I); this package ships the machinery
+plus provenance-derived class tables.
+
 ## Scripts
 
 | Command | What it does |
@@ -85,8 +112,9 @@ Conformance values are owned by the external `tests/vectors/numerals.json`
 | `npm run sweep`   | Principle IX day-by-day sweep 1990–2035, zero tolerance |
 | `npm run fiscal-vectors` | Run `tests/vectors/fiscal.json` (skips cleanly until it exists) |
 | `npm run numerals-vectors` | Run `tests/vectors/numerals.json` (skips cleanly until it exists) |
+| `npm run equivalence-vectors` | Run `tests/vectors/folding.json` (skips cleanly until it exists) |
 | `npm run build`   | Emit `dist/` (`.js` + `.d.ts`) via `tsc` |
-| `npm test`        | `node:test` wiring / contract suite (calendar + fiscal + numerals) |
+| `npm test`        | `node:test` wiring / contract suite (calendar + fiscal + numerals + equivalence) |
 
 The runners consume `../tests/vectors/calendar.json` — the same fixture the
 Python implementation runs, so the two cannot silently drift.

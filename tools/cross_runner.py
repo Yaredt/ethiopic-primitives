@@ -54,6 +54,12 @@ def main() -> int:
         ("Numeral cross-language parity", [py, "tools/numerals_parity.py", "--from", "1", "--to", "100000"]),
         ("JS numeral vectors", [node, "--experimental-strip-types", "javascript/test/run_numerals_vectors.ts"]),
         ("PY numeral vectors", [py, "python/tests/run_numerals_vectors.py"]),
+        # Feature 004 — Ge'ez-script equivalence. Vector runners SKIP (exit 0) until an
+        # authored tests/vectors/folding.json exists; the parity sweep proves JS==PY now.
+        ("SC-007 no-authored-glyphs guard", [py, "tools/check_no_authored_glyphs.py"]),
+        ("Equivalence cross-language parity", [py, "tools/equivalence_parity.py"]),
+        ("JS folding vectors", [node, "--experimental-strip-types", "javascript/test/run_equivalence_vectors.ts"]),
+        ("PY folding vectors", [py, "python/tests/run_equivalence_vectors.py"]),
     ]
 
     results: dict[str, int] = {}

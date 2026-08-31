@@ -76,12 +76,37 @@ of `to_geez`); a valid-but-non-canonical spelling raises `reason="non_canonical"
 Conformance values are owned by the external `tests/vectors/numerals.json`
 (Principle I), not by this code.
 
+## Ge'ez-script equivalence & folding
+
+Per-language homophone folding for search/index equivalence (Principles IV & V):
+
+```python
+from ethiopic_primitives import fold, equal, folded_equal, Language, FoldScheme, EquivalenceError
+
+r = fold(text, Language.AMHARIC, FoldScheme.HSL)  # length-preserving 1:1; input untouched
+r.folded   # folded key      r.offsets  # per-position map to source      r.scheme   # "HSL"
+
+equal(a, b, Language.GE_EZ)                                # non-lossy compare — valid for Ge'ez
+folded_equal(a, b, Language.AMHARIC, FoldScheme.H_ONLY)    # do a & b collate under H_ONLY?
+
+fold(text, Language.GE_EZ, FoldScheme.HSL)                 # raises EquivalenceError(reason="geez_not_foldable")
+fold(text, Language.TIGRINYA, FoldScheme.HSL)              # raises "tigrinya_requires_ack"
+fold(text, Language.TIGRINYA, FoldScheme.HSL, acknowledge_lossy=True)  # proceeds, tagged HSL
+```
+
+Language is **required** — no default, no inference. `GE_EZ` never folds; `TIGRINYA`
+needs an explicit lossy acknowledgement. **Ingestion rule (Principle V):** folding is
+for index-key/metric use only — corpora and stored/training text retain raw text and
+are never folded at ingestion. Exact class membership is owned by the external
+`tests/vectors/folding.json` (Principle I).
+
 ## Runners
 
 ```bash
 python python/tests/run_vectors.py                       # all shared vectors
 python python/tests/run_sweep.py --from 1990 --to 2035   # Principle IX sweep
 python python/tests/run_numerals_vectors.py              # numerals.json (skips cleanly until it exists)
+python python/tests/run_equivalence_vectors.py           # folding.json (skips cleanly until it exists)
 python -m unittest discover -s python/tests -p "test_*.py"
 ```
 

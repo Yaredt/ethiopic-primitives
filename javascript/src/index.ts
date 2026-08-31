@@ -38,3 +38,16 @@ export {
   type GeezNumeralReason,
   type MoneyOptions,
 } from "./numerals.ts";
+
+export {
+  fold,
+  equal,
+  foldedEqual,
+  keysEqual,
+  Language,
+  FoldScheme,
+  EquivalenceError,
+  type EquivalenceReason,
+  type FoldResult,
+  type FoldOptions,
+} from "./equivalence.ts";

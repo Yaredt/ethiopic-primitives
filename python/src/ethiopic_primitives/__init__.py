@@ -21,8 +21,26 @@ from .numerals import (
     from_geez,
     to_geez,
 )
+from .equivalence import (
+    EquivalenceError,
+    FoldResult,
+    FoldScheme,
+    Language,
+    equal,
+    fold,
+    folded_equal,
+    keys_equal,
+)
 
 __all__ = [
+    "EquivalenceError",
+    "FoldResult",
+    "FoldScheme",
+    "Language",
+    "equal",
+    "fold",
+    "folded_equal",
+    "keys_equal",
     "EthiopianDate",
     "Era",
     "AgingResult",
