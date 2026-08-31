@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 node_modules/
 dist/
+
+# Ethiopic Ledger demo (feature 005): lib/ is copied from javascript/dist at build time
+examples/ethiopic-ledger/lib/

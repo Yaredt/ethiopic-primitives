@@ -38,7 +38,7 @@ Manual checks (map to the user stories):
 ## Run the helper tests
 
 ```bash
-node --test --experimental-strip-types examples/ethiopic-ledger/test/ledger.test.js
+node --test examples/ethiopic-ledger/test/*.test.js
 ```
 
 These assert wiring, state transitions, error surfacing, and "rendered == primitive(input)" — never a hand-authored Layer-0 value.

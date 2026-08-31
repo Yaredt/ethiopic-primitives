@@ -50,9 +50,11 @@ A prior-art survey found calendar conversion is implemented many times over, but
 | `ethiopian-date` 1.0 | arithmetic correct | **crashes** (322 days) | 2017 |
 | Ethio-Intl (TS) | **48.9% of days wrong** | incorrect | dead 8 months |
 
-Python is solved — depend on it, do not rebuild (Principle III). The gaps are
-JS/TS conversion, **fiscal logic** and **Ge'ez numerals** (both absent elsewhere,
-now implemented here), and the **equivalence engine** (still absent everywhere).
+Python is solved — depend on it, do not rebuild (Principle III). The gaps this project
+fills — all now implemented here in both languages — are JS/TS calendar conversion,
+**fiscal logic**, **Ge'ez numerals**, and the **script-equivalence engine**, the last
+three absent from the surveyed ecosystem. An offline [demo](examples/ethiopic-ledger/)
+exercises all four together.
 
 ## Repo layout
 
@@ -61,18 +63,19 @@ now implemented here), and the **equivalence engine** (still absent everywhere).
 tests/vectors/calendar.json       182 vectors; 181 gating, ICU-corroborated
 tests/vectors/fiscal.json         (pending) authored fiscal vectors — gates feature 002
 tests/vectors/numerals.json       (pending) authored numeral vectors — gates feature 003
-javascript/                       TypeScript calendar + fiscal + numerals + runners
-python/                           thin wrapper (calendar) + fiscal + numerals
+tests/vectors/folding.json        (pending) authored folding vectors — gates feature 004
+javascript/                       TypeScript calendar + fiscal + numerals + equivalence + runners
+python/                           thin wrapper (calendar) + fiscal + numerals + equivalence
+examples/ethiopic-ledger/         offline demo SPA consuming all four modules (feature 005)
 tools/reference_ethiopic.py       reference implementation
-tools/check_provenance.py         Principle II gate
 tools/full_sweep.py               Principle IX gate (reference oracle)
 tools/fiscal_parity.py            Principle X — JS vs Python fiscal agreement (pre-fixture)
 tools/numerals_parity.py          Principle X — JS vs Python numeral agreement (pre-fixture)
-tools/check_no_authored_numerals.py  Principle I / SC-006 — no authored glyphs in tests
+tools/equivalence_parity.py       Principle X — JS vs Python folding agreement (pre-fixture)
+tools/check_no_authored_numerals.py  Principle I / SC-006 — no authored numeral glyphs in tests
+tools/check_no_authored_glyphs.py    Principle I / SC-007 — no authored fidäl glyphs in tests
 tools/cross_runner.py             Principle X — runs both languages, checks agreement
-specs/001-calendar-core/          calendar feature — spec, plan, tasks, design docs
-specs/002-fiscal-logic/           fiscal feature — spec, plan, tasks, design docs
-specs/003-geez-numerals/          numerals feature — spec, plan, tasks, design docs
+specs/00{1..5}-*/                  per-feature spec, plan, tasks, design docs
 ```
 
 ## Working on this

@@ -1,0 +1,50 @@
+name: pages
+
+# Build the Ethiopic Ledger demo (feature 005) and deploy it to GitHub Pages.
+# The demo is a static consumer of the built @ethiopic-primitives package; it ships
+# under examples/ and is not part of the published package surface.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build the package
+        working-directory: javascript
+        run: npm ci --ignore-scripts || npm install --ignore-scripts; npm run build
+      - name: Stage the demo lib (copy dist -> examples/ethiopic-ledger/lib)
+        working-directory: javascript
+        run: npm run demo:lib
+      - name: Run the demo helper tests
+        run: node --test examples/ethiopic-ledger/test/*.test.js
+      - name: Upload the demo as the Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: examples/ethiopic-ledger
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

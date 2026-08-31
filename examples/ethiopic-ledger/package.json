@@ -1,0 +1,6 @@
+{
+  "name": "ethiopic-ledger-demo",
+  "private": true,
+  "type": "module",
+  "description": "Offline demo consuming @ethiopic-primitives (feature 005). Not published."
+}

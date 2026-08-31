@@ -23,7 +23,8 @@
     "sweep": "node --experimental-strip-types test/run_sweep.ts",
     "fiscal-vectors": "node --experimental-strip-types test/run_fiscal_vectors.ts",
     "numerals-vectors": "node --experimental-strip-types test/run_numerals_vectors.ts",
-    "equivalence-vectors": "node --experimental-strip-types test/run_equivalence_vectors.ts"
+    "equivalence-vectors": "node --experimental-strip-types test/run_equivalence_vectors.ts",
+    "demo:lib": "node scripts/copy-demo-lib.mjs"
   },
   "engines": {
     "node": ">=22"

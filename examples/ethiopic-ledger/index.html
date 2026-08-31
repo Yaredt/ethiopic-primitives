@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ethiopic Ledger — Layer-0 demo</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div>
+        <h1>Ethiopic Ledger</h1>
+        <p class="sub">
+          A demo consuming <code>@ethiopic-primitives</code> — calendar, fiscal, numerals, and
+          script-equivalence — entirely offline. It reimplements nothing; it only displays what the
+          primitives return.
+        </p>
+      </div>
+      <div class="site-controls">
+        <label class="switch"><input type="checkbox" id="numerals-toggle" /> Ge'ez numerals</label>
+        <button id="reset-btn" type="button">Reset to seed</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel" aria-labelledby="add-h">
+        <h2 id="add-h">Add an entry</h2>
+        <div class="row">
+          <label>Calendar
+            <select id="cal-mode">
+              <option value="ethiopian">Ethiopian</option>
+              <option value="gregorian">Gregorian</option>
+            </select>
+          </label>
+          <label>Year <input type="number" id="in-year" /></label>
+          <label>Month <input type="number" id="in-month" min="1" max="13" /></label>
+          <label>Day <input type="number" id="in-day" min="1" max="31" /></label>
+        </div>
+        <div class="row">
+          <label class="grow">Description <input type="text" id="in-desc" placeholder="e.g. የሐኪም ክፍያ" /></label>
+          <label>Amount <input type="number" id="in-amount" step="0.01" /></label>
+          <button id="add-btn" type="button">Add</button>
+        </div>
+        <p class="err" id="add-error" role="alert"></p>
+        <p class="hint">Enter a date in either calendar (month 13 = Pagumē is valid) — the other calendar is shown in the ledger.</p>
+      </section>
+
+      <section class="panel" aria-labelledby="search-h">
+        <h2 id="search-h">Search descriptions (homophone folding)</h2>
+        <div class="row">
+          <label class="grow">Query <input type="text" id="q" placeholder="try ሀኪም — matches ሐኪም under HSL/Amharic" /></label>
+          <label>Language
+            <select id="lang">
+              <option value="AMHARIC">Amharic</option>
+              <option value="TIGRINYA">Tigrinya</option>
+              <option value="GE_EZ">Ge'ez</option>
+            </select>
+          </label>
+          <label>Scheme
+            <select id="scheme">
+              <option value="H_ONLY">H_ONLY</option>
+              <option value="HSL" selected>HSL</option>
+            </select>
+          </label>
+          <label class="switch"><input type="checkbox" id="ack" /> allow lossy Tigrinya folding</label>
+        </div>
+        <p class="msg" id="search-msg" role="status"></p>
+      </section>
+
+      <section class="panel" aria-labelledby="ledger-h">
+        <h2 id="ledger-h">Ledger <span class="count" id="ledger-count"></span></h2>
+        <div id="ledger"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="aging-h">
+        <h2 id="aging-h">Receivables aging (real days across Pagumē)</h2>
+        <div class="row">
+          <span>As of (Ethiopian):</span>
+          <label>Year <input type="number" id="asof-year" /></label>
+          <label>Month <input type="number" id="asof-month" min="1" max="13" /></label>
+          <label>Day <input type="number" id="asof-day" min="1" max="31" /></label>
+        </div>
+        <p class="err" id="aging-error" role="alert"></p>
+        <div id="aging"></div>
+      </section>
+    </main>
+
+    <footer class="site">
+      <p>
+        Offline &amp; deterministic (no network, no clock/locale in any computed result). Part of the
+        <a href="https://github.com/Yaredt/ethiopic-primitives">ethiopic-primitives</a> project — a non-shipped example.
+      </p>
+    </footer>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
