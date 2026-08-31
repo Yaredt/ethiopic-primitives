@@ -4,15 +4,17 @@ All Technical-Context unknowns are resolved below. No character is presented as 
 
 ## R1 — Equivalence-class source & the class tables
 
-**Decision**: Derive the `H_ONLY`/`HSL` class tables from **CLDR/ICU Ethiopic collation** (Tier-2), compiled into a per-language `equivalence-classes` module as plain code-point constants. No runtime ICU dependency; the derivation is a build-time/authoring step recorded with a provenance comment citing the CLDR/ICU data version.
+**Decision**: Derive the `H_ONLY`/`HSL` class tables from **documented Amharic/Tigrinya orthographic homophone data** — a cited linguistic reference and/or the Unicode Ethiopic block documentation — compiled into a per-language `equivalence-classes` module as plain code-point constants. No runtime dependency; the derivation is an authoring step recorded with a provenance comment citing the source.
+
+**Why not collation** (analysis finding P1): ICU/CLDR *collation* encodes **sort order**, and the homophone bases are **distinct letters with distinct primary weights** — collation keeps ሀ/ሐ/ኀ separate rather than folding them. Homophone equivalence is an orthographic/phonological fact (the well-documented "redundant" Amharic letter sets — the several /h/ forms, the two /s/ forms, the two glottal /ʔ/ forms, the two /sʼ/ forms), not a collation weight. So the class source is the orthographic record, not collation.
 
 **Class model**: Ethiopic fidäl are precomposed syllables — a base consonant × one of seven vowel *orders*. Homophone folding maps a syllable to a canonical representative of its base-consonant equivalence class **while preserving the vowel order** (so "há" folds toward the class-representative "h" base but keeps the "-á" order). The families:
 - `H_ONLY`: the "h"-homophone base family (the several Ge'ez h-series that are homophonous in Amharic).
 - `HSL`: `H_ONLY` plus the "s"-homophone family, the "l"/labialized overlaps, and the Amharic glottal set folded in Amharic.
 
-**Rationale**: CLDR/ICU is a constitution Tier-2 authority (Principle II) and the project's chosen anchor for this ecosystem (consistent with numerals). Deriving — not inventing — the classes keeps the implementation aligned with the eventual external fixture, which independently validates exact membership.
+**Rationale**: The Amharic homophone sets are standard, well-documented orthography, so deriving — not inventing — the classes from a cited orthographic/Unicode reference gives honest provenance (Principles II & III) while keeping the implementation aligned with the eventual external fixture, which independently validates exact membership. This mirrors the numerals posture (derive from a cited authority; fixture validates) with the *correct* authority for this capability.
 
-**Alternatives considered**: Hand-encoding from a single orthography paper (rejected as less reproducible than CLDR/ICU, though a cited orthography source may corroborate). A runtime ICU dependency (rejected — Principle VIII forbids ambient dependencies and Layer 0 must run offline in a browser).
+**Alternatives considered**: Deriving from CLDR/ICU collation (rejected — collation keeps homophone letters distinct, so it cannot supply folding classes; see "Why not collation" above). Shipping stubbed classes until `folding.json` defines them (rejected for v1 — the homophone sets are citable now, so v1 can ship working folding; this remains the fallback if a source proves contested). A runtime ICU dependency (rejected — Principle VIII forbids ambient dependencies and Layer 0 must run offline in a browser).
 
 ## R2 — Offset-map model (spec clarification A4)
 

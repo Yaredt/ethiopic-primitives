@@ -14,13 +14,13 @@
 
 - Q: Is folding length-preserving 1:1, or can it change the string's length? → A: Length-preserving 1:1 — each input character maps to exactly one folded character; offset map is a per-position index map (identity when nothing folds). Length-changing normalization is out of scope for v1.
 - Q: Is GE_EZ valid for a non-folding equivalence (exact/normalized compare), or rejected everywhere? → A: Valid for a non-lossy compare (exact/normalized equality of two Ge'ez strings); only a fold requested for GE_EZ raises.
-- Q: Where do the H_ONLY/HSL equivalence-class tables come from in v1? → A: Derived from CLDR/ICU Ethiopic collation (Tier-2), shipping working folding in v1; the external folding.json independently validates, and tests assert only structure/contracts, never class membership (Principle I).
+- Q: Where do the H_ONLY/HSL equivalence-class tables come from in v1? → A: Shipping working folding in v1 with the class tables derived from a cited authority; the external folding.json independently validates, and tests assert only structure/contracts, never class membership (Principle I). *(Provenance corrected 2026-08-31 per analysis finding P1: the source is documented Amharic/Tigrinya orthographic homophone data, NOT ICU/CLDR collation — collation encodes sort order and keeps homophone letters distinct. See FR-013 / A1.)*
 
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Fold Amharic text for a search index, keeping the original intact (Priority: P1)
 
-A search or retrieval system indexing Amharic content needs a *folded* key so that words spelled with any of the historically interchangeable Ge'ez homophone characters (e.g. the several forms that all sound like "h", "s", or "ʾ" in Amharic) collate and match as equivalent. The system must fold **only** to build the index key or compute a match — the stored document, the corpus, and anything a human reads must remain the raw original (Principle V). Because the folded string can be shorter or re-shaped, the caller also needs a **character-level offset map** back into the original so a match on the folded key can be highlighted at the right place in the source.
+A search or retrieval system indexing Amharic content needs a *folded* key so that words spelled with any of the historically interchangeable Ge'ez homophone characters — *fidäl* (Ethiopic syllabic characters), e.g. the several forms that all sound like "h", "s", or "ʾ" in Amharic — collate and match as equivalent. The system must fold **only** to build the index key or compute a match — the stored document, the corpus, and anything a human reads must remain the raw original (Principle V). Because the folded string can be shorter or re-shaped, the caller also needs a **character-level offset map** back into the original so a match on the folded key can be highlighted at the right place in the source.
 
 **Why this priority**: Cross-spelling equivalence is the whole reason this module exists; without it, the same Amharic word spelled two legitimate ways fails to match. It is the foundational capability every other scenario builds on.
 
@@ -29,7 +29,7 @@ A search or retrieval system indexing Amharic content needs a *folded* key so th
 **Acceptance Scenarios**:
 
 1. **Given** an Amharic string and an explicit language and scheme, **When** it is folded, **Then** the result carries both the folded representation and a character-level offset map back to the original, and the original string is unmodified.
-2. **Given** two Amharic strings that differ only by interchangeable homophone characters, **When** each is folded under the same scheme, **Then** their folded keys are equal.
+2. **Given** two Amharic strings that differ only by interchangeable homophone characters, **When** each is folded under the same scheme, **Then** their folded keys are equal. *(Validated by the external `folding.json`, not by interim agent tests — asserting which characters collate is class membership, owned by the fixture per Principle I / FR-011.)*
 3. **Given** two Amharic strings that are genuinely different words, **When** each is folded, **Then** their folded keys differ (folding does not over-collapse).
 
 ---
@@ -62,7 +62,7 @@ For **Tigrinya** (`TIGRINYA`), the four glottal characters that collapse togethe
 
 1. **Given** a Tigrinya fold **without** the lossy-operation acknowledgement, **When** it is called, **Then** it raises an explicit error naming the lossy collapse it would cause.
 2. **Given** a Tigrinya fold **with** the explicit acknowledgement, **When** it is called, **Then** it returns a folded representation plus offset map and records which scheme was applied.
-3. **Given** two Tigrinya strings differing only in one of the four glottal characters, **When** folded under an acknowledged lossy scheme, **Then** they collate as equal; and the same two strings compared **without** folding are unequal.
+3. **Given** two Tigrinya strings differing only in one of the four glottal characters, **When** folded under an acknowledged lossy scheme, **Then** they collate as equal; and the same two strings compared **without** folding are unequal. *(The "collate as equal" half is validated by the external `folding.json`, not interim agent tests — it asserts class membership, owned by the fixture per Principle I / FR-011.)*
 
 ---
 
@@ -77,7 +77,7 @@ Every folded artifact — an index key, a similarity score, a cached comparison 
 **Acceptance Scenarios**:
 
 1. **Given** any folded result, **When** it is produced, **Then** it carries an explicit scheme tag of `H_ONLY` or `HSL` and never a defaulted/unspecified scheme.
-2. **Given** a string whose folded forms differ between `H_ONLY` and `HSL`, **When** folded under each, **Then** the two folded keys differ and each is tagged with the scheme that produced it.
+2. **Given** a string whose folded forms differ between `H_ONLY` and `HSL`, **When** folded under each, **Then** the two folded keys differ and each is tagged with the scheme that produced it. *(That the keys differ is validated by the external `folding.json`, not interim agent tests — it asserts class membership per Principle I / FR-011; the scheme **tagging** is asserted by interim tests.)*
 3. **Given** two folded keys produced under different schemes, **When** they are compared for equality, **Then** the comparison is only meaningful within a single scheme (a scheme mismatch is surfaced, not silently compared).
 
 ---
@@ -121,7 +121,7 @@ A team using the TypeScript package on the frontend and the Python package on th
 - **FR-010**: Where the capability ships in more than one language, all implementations MUST expose the same equivalence surface and MUST run the identical shared folding fixture; divergence on the gating set is a release blocker (Principle X).
 - **FR-011**: Acceptance MUST be driven exclusively by an externally authored folding fixture; the implementation and its automated tests MUST NOT assert any hand-authored equivalence-class membership or folded value (Constitution Principle I). Until that fixture exists, automated tests are limited to structural invariants (offset-map fidelity, scheme tagging), error/acknowledge contracts, and cross-language self-consistency.
 - **FR-012**: Folding MUST be length-preserving 1:1 — each input character maps to exactly one folded character, and the offset map is a per-position index map equal to the identity when nothing folds (Principle V). Length-changing normalization is out of scope for v1.
-- **FR-013**: The `H_ONLY`/`HSL` equivalence-class tables MUST be derived from a cited Tier-2 authority (CLDR/ICU Ethiopic collation), not invented, and MUST live in a single location so a correction from the external fixture is a one-place change; the external `folding.json` is the independent validator of exact class membership (Constitution Principles II & III).
+- **FR-013**: The `H_ONLY`/`HSL` equivalence-class tables MUST be derived from **documented Amharic (and, for the Tigrinya-distinct set, Tigrinya) orthographic homophone data** — a cited linguistic reference and/or the Unicode Ethiopic block documentation — **not** from ICU/CLDR collation (collation encodes sort order and keeps homophone letters distinct, so it does not supply folding classes). The tables MUST NOT be invented and MUST live in a single location so a correction from the external fixture is a one-place change; the external `folding.json` is the independent validator of exact class membership (Constitution Principles II & III).
 
 ### Key Entities
 
@@ -146,11 +146,11 @@ A team using the TypeScript package on the frontend and the Python package on th
 
 ## Assumptions
 
-The following are **informed guesses that require validation against a Tier-1/Tier-2 source** (Unicode CLDR/ICU collation data for Ethiopic, or a cited Ethiopian/academic orthography reference). The externally authored `folding.json` will confirm or correct them; the implementation is structured so an equivalence-class change touches one place.
+The following are **informed guesses that require validation against a cited orthographic source** (documented Amharic/Tigrinya orthography and/or the Unicode Ethiopic block documentation — not ICU/CLDR collation, which keeps homophone letters distinct). The externally authored `folding.json` will confirm or correct them; the implementation is structured so an equivalence-class change touches one place.
 
-- **A1 — Scheme definitions** *(source clarified 2026-08-30)*: `H_ONLY` collapses only the "h"-homophone family (the several Ge'ez forms that share the "h" sound in Amharic); `HSL` additionally collapses the "s" and "l" homophone families (and the Amharic glottal set). The v1 class tables are **derived from CLDR/ICU Ethiopic collation** (Tier-2) so v1 ships working folding with cited provenance; the external `folding.json` independently validates the exact membership. The class tables live in one place so a fixture correction is a single-location change, and no test asserts class membership (Principle I).
+- **A1 — Scheme definitions** *(source clarified 2026-08-30; provenance corrected 2026-08-31)*: `H_ONLY` collapses only the "h"-homophone family (the several Ge'ez forms that share the "h" sound in Amharic); `HSL` additionally collapses the "s" and "l" homophone families (and the Amharic glottal set). The v1 class tables are **derived from documented Amharic/Tigrinya orthographic homophone data** (a cited linguistic reference and/or the Unicode Ethiopic block documentation) — **not** from ICU/CLDR collation, which keeps homophone letters distinct. v1 ships working folding with cited provenance; the external `folding.json` independently validates the exact membership. The class tables live in one place so a fixture correction is a single-location change, and no test asserts class membership (Principle I).
 - **A2 — Tigrinya's distinct set**: the four glottal characters that collapse in Amharic are the specific characters Tigrinya keeps distinct; the acknowledgement gates exactly those collapses. *To validate against the same sources.*
-- **A3 — Ge'ez non-folding comparison** *(clarified 2026-08-30)*: `GE_EZ` **is** a valid language for a non-lossy exact/normalized comparison of two Ge'ez strings; only a *folding* operation for `GE_EZ` raises (Principle IV). This is a settled decision, not a pending assumption.
+- **A3 — Ge'ez non-folding comparison** *(clarified 2026-08-30)*: `GE_EZ` **is** a valid language for a non-lossy **exact code-point comparison** of two Ge'ez strings (no Unicode normalization is applied — callers normalize first if needed); only a *folding* operation for `GE_EZ` raises (Principle IV). This is a settled decision, not a pending assumption.
 - **A4 — Offset-map shape** *(clarified 2026-08-30)*: folding is **length-preserving 1:1** — each input character maps to exactly one folded character. The offset map is therefore a per-position index map at the abstract-character (code-point) level, identical across languages (Principle X) and equal to the identity mapping when nothing folds. Length-changing normalization (e.g. recomposing multi-code-point sequences) is **out of scope for v1**; callers needing it normalize before folding.
 - The folding fixture (`tests/vectors/folding.json`) does not yet exist; it is authored externally and must carry `source` provenance and a `gating` flag per Principle II before any public release. Until it exists, acceptance is limited to structural invariants, error/acknowledge contracts, and cross-language self-consistency (Principle I).
 - Calendar, fiscal, and numeral features are separate and out of scope here. Translation, transliteration to Latin, and non-Ge'ez scripts are explicitly out of scope for v1.

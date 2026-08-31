@@ -38,7 +38,7 @@ No persistent state. The "data model" is the language/scheme vocabulary, the fol
 
 ### Equivalence-class table (internal, provenance-derived)
 
-- **Definition**: per-scheme maps from a fidäl code point to its class representative, derived from CLDR/ICU Ethiopic collation (R1) and living in one module per language.
+- **Definition**: per-scheme maps from a fidäl code point to its class representative, derived from documented Amharic/Tigrinya orthographic homophone data (R1 — not ICU/CLDR collation) and living in one module per language.
 - **Rules** (FR-013, Principles II & III): derived from a cited Tier-2 authority, not invented; single swap point; not asserted by any test (Principle I). Non-fidäl characters (ASCII, digits, punctuation, whitespace, Ge'ez numerals U+1369–U+137C) are absent from the tables and fold to themselves (R6).
 
 ### EquivalenceError
@@ -51,7 +51,7 @@ No persistent state. The "data model" is the language/scheme vocabulary, the fol
 ### Folding vector (external, read-only)
 
 - **Definition**: a provenance-tagged record pairing an input (`text` + `language` + `scheme` + acknowledgement) with its expected outcome (folded key, offset map, or a specified error `reason`), in `tests/vectors/folding.json`.
-- **Ownership**: authored externally, never by the implementation (Principle I); must carry `source` (Tier-2 CLDR/ICU) and `gating` per Principle II before release.
+- **Ownership**: authored externally, never by the implementation (Principle I); must carry `source` (a cited orthographic/Unicode-Ethiopic authority) and `gating` per Principle II before release.
 - **Status**: not yet present; runners skip cleanly until it exists.
 
 ## Operations & relationships

@@ -17,7 +17,7 @@ cd javascript && npm run build && cd ..
 ## What passes now vs. later
 
 - **Now**: error/acknowledge contracts, structural invariants (1:1 length, offset-map fidelity, scheme tagging), the JS↔PY parity sweep, and the SC-007 no-authored-fidäl guard. The folding vector runners **skip cleanly** because `tests/vectors/folding.json` does not exist yet.
-- **Later (gates release)**: the externally authored `tests/vectors/folding.json` (Tier-2 CLDR/ICU provenance) passing in both languages with zero divergence — see the last section.
+- **Later (gates release)**: the externally authored `tests/vectors/folding.json` (provenance from a cited orthographic/Unicode-Ethiopic authority) passing in both languages with zero divergence — see the last section.
 
 ## Per-language tests
 
@@ -73,7 +73,7 @@ Each must raise `EquivalenceError` with the noted `reason` — never return a fo
 
 ## Acceptance gate (Principle IX — do this once `folding.json` exists)
 
-1. Drop the externally authored `tests/vectors/folding.json` into place (provenance-tagged, `gating` set, Tier-2 CLDR/ICU source — never authored by the agent).
+1. Drop the externally authored `tests/vectors/folding.json` into place (provenance-tagged, `gating` set, cited orthographic/Unicode-Ethiopic source — never authored by the agent, never ICU/CLDR collation).
 2. Run `python tools/cross_runner.py`; the folding vector runners now execute and must pass in both languages with zero divergence.
-3. Confirm the fixture validates the CLDR-derived class membership; correct the single `equivalence-classes` module if the fixture disagrees (never the fold functions, never the tests).
-4. Record the CLDR/ICU provenance in `folding.json` and resolve the CC-BY-SA licence tension on any corpus used, before public release (Principles II).
+3. Confirm the fixture validates the orthography-derived class membership; correct the single `equivalence-classes` module if the fixture disagrees (never the fold functions, never the tests).
+4. Record the orthographic/Unicode-Ethiopic provenance in `folding.json` and resolve the CC-BY-SA licence tension on any corpus used, before public release (Principle II).

@@ -9,7 +9,7 @@ description: "Task list for Ge'ez-Script Equivalence & Folding implementation"
 
 **Tests**: Test tasks ARE included — but only the kinds the constitution permits: **structural invariants**, **error/acknowledge contracts**, and **cross-language parity**. No task asserts a hand-authored equivalence-class membership or folded value; conformance comes only from the external `tests/vectors/folding.json` (Principle I). Value-gating acceptance is deferred until that fixture exists (Principle IX).
 
-**Organization**: Grouped by the five user stories from spec.md. A fourth self-contained module (`equivalence.ts` / `equivalence.py`) with no calendar/fiscal/numeral dependency. Folding is length-preserving 1:1; the CLDR/ICU-derived class tables live in one unit per language.
+**Organization**: Grouped by the five user stories from spec.md. A fourth self-contained module (`equivalence.ts` / `equivalence.py`) with no calendar/fiscal/numeral dependency. Folding is length-preserving 1:1; the orthography-derived class tables live in one unit per language.
 
 ## Format: `[ID] [P?] [Story] Description`
 
@@ -34,11 +34,11 @@ Multi-language library. JS in `javascript/src/` + `javascript/test/`; Python in 
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
-**Purpose**: The CLDR-derived class tables and the language/scheme/acknowledgement guards that every user story depends on.
+**Purpose**: The orthography-derived class tables and the language/scheme/acknowledgement guards that every user story depends on.
 
 **⚠️ CRITICAL**: No fold/compare work can begin until this phase is complete.
 
-- [ ] T006 Create `javascript/src/equivalence-classes.ts` — the `H_ONLY` and `HSL` maps (fidäl code point → class representative) **derived from CLDR/ICU Ethiopic collation** with a provenance comment citing the data version (research R1); the single swap point. Non-fidäl characters are absent (fold to themselves)
+- [ ] T006 Create `javascript/src/equivalence-classes.ts` — the `H_ONLY` and `HSL` maps (fidäl code point → class representative) **derived from documented Amharic/Tigrinya orthographic homophone data** (a cited linguistic reference and/or the Unicode Ethiopic block documentation — NOT ICU/CLDR collation, which keeps homophone letters distinct) with a provenance comment citing the source (research R1); the single swap point. Non-fidäl characters are absent (fold to themselves)
 - [ ] T007 [P] Create `python/src/ethiopic_primitives/_equivalence_classes.py` — mirror the same tables and provenance comment
 - [ ] T008 Implement the argument guards in `javascript/src/equivalence.ts` — reject missing language→`missing_language`, unknown→`unknown_language`, missing scheme→`missing_scheme`, unknown→`unknown_scheme`, `GE_EZ` fold→`geez_not_foldable`, unacknowledged `TIGRINYA` fold→`tigrinya_requires_ack` (after T001, T006)
 - [ ] T009 [P] Implement the same guards in `python/src/ethiopic_primitives/equivalence.py` (after T002, T007)
@@ -55,7 +55,7 @@ Multi-language library. JS in `javascript/src/` + `javascript/test/`; Python in 
 
 - [ ] T010 [US1] Implement `fold` in `javascript/src/equivalence.ts` — per-character class lookup (length-preserving), build `FoldResult` with an identity offset map, non-fidäl pass-through (incl. Ge'ez numerals U+1369–U+137C), input never mutated (after T008)
 - [ ] T011 [P] [US1] Implement `fold` in `python/src/ethiopic_primitives/equivalence.py` with the identical algorithm (after T009)
-- [ ] T012 [P] [US1] Add structural tests in `javascript/test/equivalence.test.ts` — length invariants, offset-map fidelity, input-unchanged, non-fidäl pass-through, homophone variants (built via `String.fromCodePoint`) fold equal, distinct words differ. No authored class values or glyph literals.
+- [ ] T012 [P] [US1] Add **membership-free** structural tests in `javascript/test/equivalence.test.ts` — length invariants (`folded.length === input.length === offsets.length`), offset-map fidelity (identity in v1), input-unchanged, **determinism** (same input → same output), **idempotence** (`fold(fold(x)).folded === fold(x).folded`), and non-fidäl pass-through (a string of only ASCII/digits/punctuation/Ge'ez numerals, built from code points, folds to itself with an identity map). Do NOT assert that two **distinct** inputs fold equal — which characters collate is fixture-owned (Principle I / FR-011). No glyph literals.
 - [ ] T013 [P] [US1] Add the same structural tests in `python/tests/test_equivalence.py` (fidäl inputs via `chr`)
 
 **Checkpoint**: Folding works for Amharic and returns the immutable parallel representation (Principle V).
@@ -85,7 +85,7 @@ Multi-language library. JS in `javascript/src/` + `javascript/test/`; Python in 
 
 - [ ] T018 [US3] Wire the Tigrinya acknowledgement path in `javascript/src/equivalence.ts` — `fold(..., TIGRINYA, scheme, { acknowledgeLossy: true })` proceeds; without the flag it raises `tigrinya_requires_ack` (after T014)
 - [ ] T019 [P] [US3] Mirror with `acknowledge_lossy=False` default in `python/src/ethiopic_primitives/equivalence.py` (after T015)
-- [ ] T020 [P] [US3] Add acknowledge tests in `javascript/test/equivalence.test.ts` — unacknowledged Tigrinya→`tigrinya_requires_ack`; acknowledged→`FoldResult` tagged with the scheme; glottal-differing pair (code-point built) unequal under `equal`, equal under acknowledged fold
+- [ ] T020 [P] [US3] Add acknowledge tests in `javascript/test/equivalence.test.ts` — unacknowledged Tigrinya→`tigrinya_requires_ack`; an acknowledged Tigrinya fold returns a `FoldResult` tagged with the scheme and length-preserving; `foldedEqual(x, x, TIGRINYA, scheme, { acknowledgeLossy: true })` is reflexively `true`. Do NOT assert that two distinct glottal characters collate under HSL — that is class membership, fixture-owned (Principle I / FR-011).
 - [ ] T021 [P] [US3] Add the same acknowledge tests in `python/tests/test_equivalence.py`
 
 **Checkpoint**: The highest-risk silent-loss case is a conscious, auditable caller decision.
@@ -100,7 +100,7 @@ Multi-language library. JS in `javascript/src/` + `javascript/test/`; Python in 
 
 - [ ] T022 [US4] Implement `foldedEqual` (fold both under one scheme, compare) and `keysEqual` (raise `scheme_mismatch` if the two results' schemes differ) in `javascript/src/equivalence.ts` (after T010)
 - [ ] T023 [P] [US4] Implement `folded_equal` and `keys_equal` in `python/src/ethiopic_primitives/equivalence.py` (after T011)
-- [ ] T024 [P] [US4] Add scheme tests in `javascript/test/equivalence.test.ts` — every `FoldResult` carries an explicit scheme; `H_ONLY` vs `HSL` differ where families differ; `keysEqual` across schemes→`scheme_mismatch`; missing scheme→`missing_scheme`, unknown→`unknown_scheme`. No authored class values.
+- [ ] T024 [P] [US4] Add scheme tests in `javascript/test/equivalence.test.ts` — every `FoldResult` carries the explicit scheme it was called with; `keysEqual` across differing schemes→`scheme_mismatch`; `foldedEqual`/`keysEqual` on identical inputs is reflexively `true`; missing scheme→`missing_scheme`, unknown→`unknown_scheme`. Do NOT assert that a given character folds differently between `H_ONLY` and `HSL` — that is class membership, fixture-owned (Principle I / FR-011).
 - [ ] T025 [P] [US4] Add the same scheme tests in `python/tests/test_equivalence.py`
 
 **Checkpoint**: Principle V's scheme-tagging and scheme-safety are demonstrable; ingestion stays raw (documented, no code path folds at ingestion).
@@ -126,9 +126,9 @@ Multi-language library. JS in `javascript/src/` + `javascript/test/`; Python in 
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T032 [P] Document the equivalence surface in `javascript/README.md` and `python/README.md` (explicit language, GE_EZ refusal, Tigrinya acknowledgement, schemes, offset map)
+- [ ] T032 [P] Document the equivalence surface in `javascript/README.md` and `python/README.md` (explicit language, GE_EZ refusal, Tigrinya acknowledgement, schemes, offset map), **including the ingestion rule** (FR-006, Principle V): folding is for index-key/metric use only — corpora, stored documents, and training data retain raw text and are never folded at ingestion
 - [ ] T033 Run the `javascript` build (`npm run build`) then the full quickstart validation (`npm test`, `C:\Python314\python.exe -m unittest discover -s python/tests -p "test_*.py"`, `C:\Python314\python.exe tools/cross_runner.py`) and confirm equivalence vector runners skip cleanly while `folding.json` is absent — see [quickstart.md](quickstart.md)
-- [ ] T034 [P] Record the release gates in the PR's principle checklist: the external `tests/vectors/folding.json` (Tier-2 CLDR/ICU provenance, authored externally — Principles I, II, IX) and the CC-BY-SA licence resolution for any corpus used to author it
+- [ ] T034 [P] Record the release gates in the PR's principle checklist: the external `tests/vectors/folding.json` (provenance from a cited orthographic/Unicode-Ethiopic authority — NOT collation — authored externally, Principles I, II, IX) and the CC-BY-SA licence resolution for any corpus used to author it
 
 ---
 
@@ -194,7 +194,7 @@ Task: "Structural tests in python/tests/test_equivalence.py"               # T01
 
 ### Acceptance is NOT the green suite (Principle IX)
 
-Passing these tasks yields a working, self-consistent, cross-language-agreeing module. **Final acceptance additionally requires** the externally authored `tests/vectors/folding.json` to pass in both languages with zero divergence, validating the CLDR-derived class membership — plus recording CLDR/ICU provenance and resolving the CC-BY-SA corpus licence before public release. None of that is agent-authored.
+Passing these tasks yields a working, self-consistent, cross-language-agreeing module. **Final acceptance additionally requires** the externally authored `tests/vectors/folding.json` to pass in both languages with zero divergence, validating the orthography-derived class membership — plus recording the orthographic/Unicode-Ethiopic provenance and resolving the CC-BY-SA corpus licence before public release. None of that is agent-authored.
 
 ---
 
@@ -202,5 +202,6 @@ Passing these tasks yields a working, self-consistent, cross-language-agreeing m
 
 - `[P]` = different files, no incomplete dependency.
 - No test asserts a hand-authored class membership or folded value (Principle I); the SC-007 guard forbids raw fidäl literals in the test files — build fidäl inputs from code points.
+- **Interim tests assert only membership-free properties** — determinism, idempotence, length/offset structure, scheme tagging, error/acknowledge contracts, and JS↔PY parity. Any "these collate equal" or "these fold differently" claim is validated ONLY by `folding.json` (Principle I / FR-011), never by an agent-authored test. Parity asserts JS==PY, not correctness, so it is membership-free.
 - Commit after each task or logical group; keep JS and PY behavior identical (Principle X).
 - Never let `fold` mutate its input or return a bare string (Principle V); never let a fold succeed for `GE_EZ` or unacknowledged `TIGRINYA` (Principle IV).
