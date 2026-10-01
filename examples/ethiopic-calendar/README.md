@@ -17,6 +17,12 @@ numeral and fiscal value comes from the package.
 - **Holidays** — fixed feasts plus Genna, Timket and the Easter cycle (Hosanna, Siklet,
   Fasika), placed via the Julian calendar and converted through the package's JDN API.
   Islamic holidays follow the lunar Hijri calendar and are not computed.
+- **Orthodox fasts** — the seven fasts of the Ethiopian Orthodox Tewahedo Church:
+  Abiy Tsom (55 days to Holy Saturday), Nineveh, the Apostles' fast (Monday after
+  Pentecost to Hamle 4), Filseta (Nehase 1–15), the Prophets' fast (Hidar 15 to the eve of
+  Genna), Gahad (eve of Timket), and the Wednesday/Friday fast (not in the Fifty Days
+  after Fasika, nor on Genna/Timket). Shown on the grid, in day details with
+  "day N of M", and as a seasonal list; can be hidden with "Show fasts".
 - Amharic / English labels, Arabic / Ge'ez numerals, light / dark theme, keyboard
   navigation (arrows, PgUp/PgDn, `T`), and a phone layout.
 
@@ -37,7 +43,8 @@ node --test examples/ethiopic-calendar/test/*.test.js
 ```
 
 They check wiring and structural invariants (grids are contiguous and Monday-first,
-Easter is always a Sunday, holidays stay inside their year) — never a hand-authored
+Easter is always a Sunday, holidays stay inside their year, Abiy Tsom is 55 days
+ending the Saturday before Fasika, no Wednesday/Friday fast in the Fifty Days) — never a hand-authored
 Layer-0 value (Principle I).
 
 ## Constitution note
