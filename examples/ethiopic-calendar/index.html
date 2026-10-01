@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ethiopian Calendar · ዘመን</title>
+    <meta name="description" content="An offline Ethiopian calendar built on @ethiopic-primitives — 13 months, Pagumē, Ge'ez numerals, holidays, and fiscal periods." />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="tilet" aria-hidden="true"></div>
+
+    <header class="top">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">ዘ</span>
+        <div>
+          <h1>Ethiopian Calendar <span class="am">· የኢትዮጵያ ቀን መቁጠሪያ</span></h1>
+          <p class="today-line" id="today-line"></p>
+        </div>
+      </div>
+      <div class="prefs" role="group" aria-label="Display preferences">
+        <div class="seg" role="radiogroup" aria-label="Label language">
+          <button type="button" data-lang="am" role="radio">አማርኛ</button>
+          <button type="button" data-lang="en" role="radio">English</button>
+        </div>
+        <div class="seg" role="radiogroup" aria-label="Numerals">
+          <button type="button" data-num="arabic" role="radio">123</button>
+          <button type="button" data-num="geez" role="radio" title="Ge'ez numerals">፩፪፫</button>
+        </div>
+        <button type="button" class="icon-btn" id="theme-btn" aria-label="Toggle dark mode" title="Toggle dark mode">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="cal card" aria-labelledby="cal-title">
+        <div class="toolbar">
+          <div class="nav">
+            <button type="button" class="icon-btn" id="prev-btn" aria-label="Previous">
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/></svg>
+            </button>
+            <button type="button" class="icon-btn" id="next-btn" aria-label="Next">
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/></svg>
+            </button>
+            <button type="button" class="pill" id="today-btn">Today</button>
+          </div>
+          <div class="title-block">
+            <h2 id="cal-title"></h2>
+            <p class="span" id="cal-span"></p>
+          </div>
+          <div class="seg" role="radiogroup" aria-label="View">
+            <button type="button" data-view="month" role="radio">Month</button>
+            <button type="button" data-view="year" role="radio">Year</button>
+          </div>
+        </div>
+
+        <div id="view" class="view"></div>
+
+        <p class="kbd-hint">
+          <kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> move · <kbd>PgUp</kbd><kbd>PgDn</kbd> month · <kbd>T</kbd> today
+        </p>
+      </section>
+
+      <aside class="side">
+        <section class="card detail" id="detail" aria-live="polite"></section>
+
+        <section class="card" aria-labelledby="conv-h">
+          <h3 id="conv-h">Convert a date</h3>
+          <div class="conv">
+            <label>Gregorian
+              <input type="date" id="conv-greg" />
+            </label>
+            <div class="conv-out" id="conv-greg-out"></div>
+          </div>
+          <div class="conv">
+            <span class="lbl">Ethiopian</span>
+            <div class="eth-inputs">
+              <input type="number" id="conv-eth-day" min="1" max="30" aria-label="Day" />
+              <select id="conv-eth-month" aria-label="Month"></select>
+              <input type="number" id="conv-eth-year" aria-label="Year" />
+            </div>
+            <div class="conv-out" id="conv-eth-out"></div>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="hol-h">
+          <h3 id="hol-h"></h3>
+          <ul class="holidays" id="holidays"></ul>
+          <p class="note">Islamic holidays (Eid al-Fitr, Eid al-Adha, Mawlid) follow the lunar Hijri calendar and aren't shown.</p>
+        </section>
+      </aside>
+    </main>
+
+    <footer class="foot">
+      Offline &amp; deterministic — every conversion, weekday, numeral and fiscal value comes from
+      <a href="https://github.com/Yaredt/ethiopic-primitives"><code>ethiopic-primitives</code></a>.
+      “Today” is read from your clock only to pick the starting page.
+    </footer>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

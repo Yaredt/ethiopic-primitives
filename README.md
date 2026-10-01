@@ -54,7 +54,8 @@ Python is solved — depend on it, do not rebuild (Principle III). The gaps this
 fills — all now implemented here in both languages — are JS/TS calendar conversion,
 **fiscal logic**, **Ge'ez numerals**, and the **script-equivalence engine**, the last
 three absent from the surveyed ecosystem. An offline [demo](examples/ethiopic-ledger/)
-exercises all four together.
+exercises all four together, and an [Ethiopian calendar UI](examples/ethiopic-calendar/)
+shows the calendar, numerals and fiscal modules in a month/year view.
 
 ## Repo layout
 
@@ -67,6 +68,7 @@ tests/vectors/folding.json        (pending) authored folding vectors — gates f
 javascript/                       TypeScript calendar + fiscal + numerals + equivalence + runners
 python/                           thin wrapper (calendar) + fiscal + numerals + equivalence
 examples/ethiopic-ledger/         offline demo SPA consuming all four modules (feature 005)
+examples/ethiopic-calendar/       offline Ethiopian calendar UI (month/year views, holidays, converter)
 tools/reference_ethiopic.py       reference implementation
 tools/full_sweep.py               Principle IX gate (reference oracle)
 tools/fiscal_parity.py            Principle X — JS vs Python fiscal agreement (pre-fixture)
