@@ -1,0 +1,6 @@
+{
+  "name": "ethiopic-calendar-demo",
+  "private": true,
+  "type": "module",
+  "description": "Offline Ethiopian calendar demo consuming @ethiopic-primitives. Not published."
+}

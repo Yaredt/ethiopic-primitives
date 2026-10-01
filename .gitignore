@@ -5,3 +5,6 @@ dist/
 
 # Ethiopic Ledger demo (feature 005): lib/ is copied from javascript/dist at build time
 examples/ethiopic-ledger/lib/
+
+# Ethiopian Calendar demo: lib/ is copied from javascript/dist at build time
+examples/ethiopic-calendar/lib/

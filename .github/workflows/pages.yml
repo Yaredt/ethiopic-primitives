@@ -1,7 +1,8 @@
 name: pages
 
-# Build the Ethiopic Ledger demo (feature 005) and deploy it to GitHub Pages.
-# The demo is a static consumer of the built @ethiopic-primitives package; it ships
+# Build the static demos and deploy them to GitHub Pages: the Ethiopic Ledger
+# (feature 005) at the site root and the Ethiopian Calendar under /calendar/.
+# Both are static consumers of the built @ethiopic-primitives package; it ships
 # under examples/ and is not part of the published package surface.
 
 on:
@@ -29,15 +30,20 @@ jobs:
       - name: Build the package
         working-directory: javascript
         run: npm ci --ignore-scripts || npm install --ignore-scripts; npm run build
-      - name: Stage the demo lib (copy dist -> examples/ethiopic-ledger/lib)
+      - name: Stage the demo libs (copy dist -> examples/*/lib)
         working-directory: javascript
         run: npm run demo:lib
       - name: Run the demo helper tests
-        run: node --test examples/ethiopic-ledger/test/*.test.js
-      - name: Upload the demo as the Pages artifact
+        run: node --test examples/ethiopic-ledger/test/*.test.js examples/ethiopic-calendar/test/*.test.js
+      - name: Assemble the site (ledger at /, calendar at /calendar/)
+        run: |
+          mkdir -p _site/calendar
+          cp -R examples/ethiopic-ledger/. _site/
+          cp -R examples/ethiopic-calendar/. _site/calendar/
+      - name: Upload the site as the Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: examples/ethiopic-ledger
+          path: _site
 
   deploy:
     needs: build
