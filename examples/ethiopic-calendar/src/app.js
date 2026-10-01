@@ -13,6 +13,8 @@ import {
   shiftMonth,
   holidaysFor,
   holidayIndex,
+  fastsFor,
+  fastOn,
   dayFacts,
   parseIsoDate,
   isoGregorian,
@@ -46,6 +48,7 @@ const state = {
   numerals: loadPref("num", "arabic", ["arabic", "geez"]),
   theme: loadPref("theme", "", ["", "light", "dark"]),
   view: loadPref("view", "month", ["month", "year"]),
+  fasts: loadPref("fasts", "on", ["on", "off"]),
   year: today.year,
   month: today.month,
   selected: today,
@@ -74,6 +77,11 @@ function relative(days) {
   if (days === -1) return "Yesterday";
   return days > 0 ? `In ${days.toLocaleString("en")} days` : `${(-days).toLocaleString("en")} days ago`;
 }
+function fastClass(date) {
+  if (state.fasts !== "on") return "";
+  const f = fastOn(date);
+  return !f ? "" : f.fast.key === "weekly" ? "fast-weekly" : "fast";
+}
 function holidayLabel(h) {
   return state.lang === "am" ? `${h.am} · ${h.en}` : h.en;
 }
@@ -95,6 +103,7 @@ function render() {
   else renderYear();
   renderDetail();
   renderHolidays();
+  renderFasts();
   renderConverterMonths();
 }
 
@@ -129,13 +138,16 @@ function renderMonth() {
       if (outside) cls.push("outside");
       if (c === 6) cls.push("sun");
       if (hs.length) cls.push("holiday", pub.length ? "pub" : "obs-only");
+      const fc = fastClass(date);
+      if (fc) cls.push(fc);
       if (jdn === todayJdn) cls.push("today");
       if (jdn === selJdn) cls.push("selected");
       const gLabel = greg.day === 1 || (r === 0 && c === 0) || (!outside && date.day === 1)
         ? `${GREG_MONTHS[greg.month - 1].slice(0, 3)} ${greg.day}`
         : String(greg.day);
       const hText = hs.map((h) => (state.lang === "am" ? h.am : h.en.replace(/ \(.*\)$/, ""))).join(" · ");
-      const aria = `${ethLong(date)}; ${gregLong(greg)}${hs.length ? "; " + hs.map((h) => h.en).join(", ") : ""}`;
+      const fo = fc ? fastOn(date) : null;
+      const aria = `${ethLong(date)}; ${gregLong(greg)}${hs.length ? "; " + hs.map((h) => h.en).join(", ") : ""}${fo ? "; " + fo.fast.en : ""}`;
       html += `<button type="button" role="gridcell" class="${cls.join(" ")}" data-jdn="${jdn}" tabindex="${jdn === selJdn ? 0 : -1}" aria-label="${esc(aria)}" aria-selected="${jdn === selJdn}">
         <span class="n">${esc(n(date.day))}</span>
         <span class="g">${esc(gLabel)}</span>
@@ -145,6 +157,7 @@ function renderMonth() {
     html += "</div>";
   });
   html += "</div>";
+  html += legend();
 
   if (month === 13) {
     const days = EthiopianDate.daysInMonth(year, 13);
@@ -177,14 +190,26 @@ function renderYear() {
     for (const week of monthGrid(year, m)) {
       week.forEach((cell, c) => {
         const jdn = cell.date.toJdn();
-        const cls = cell.outside ? "o" : jdn === todayJdn ? "t" : hol.has(jdn) ? "hd" : c === 6 ? "su" : "";
+        const base = cell.outside ? "o" : jdn === todayJdn ? "t" : hol.has(jdn) ? "hd" : c === 6 ? "su" : "";
+        const cls = cell.outside ? base : `${base} ${fastClass(cell.date)}`.trim();
         html += `<span class="${cls}">${cell.outside ? "" : esc(n(cell.date.day))}</span>`;
       });
     }
     html += "</div></button>";
   }
   html += "</div>";
+  html += legend();
   $("view").innerHTML = html;
+}
+
+function legend() {
+  const on = state.fasts === "on";
+  return `<div class="legend">
+    <span><i class="lg-hol"></i>Public holiday</span>
+    <span><i class="lg-obs"></i>Observance</span>
+    ${on ? `<span><i class="lg-fast"></i>Fasting season</span><span><i class="lg-weekly"></i>Wed &amp; Fri fast</span>` : ""}
+    <label class="switch"><input type="checkbox" id="fasts-toggle"${on ? " checked" : ""} /> Show fasts</label>
+  </div>`;
 }
 
 function renderDetail() {
@@ -199,6 +224,7 @@ function renderDetail() {
     ["Evangelist", `<span lang="am">ዘመነ ${esc(ev.am)}</span> · ${esc(ev.en)}`],
     ["Amete Alem", esc(n(f.alemYear))],
     ["Fiscal", `FY ${esc(n(f.fiscal.year))} · Q${esc(n(f.fiscal.quarter))} · P${esc(n(f.fiscal.period))}`],
+    ["Fasting", fastingFact(d)],
     ["Relative", esc(relative(f.fromToday))],
   ];
   $("detail").innerHTML = `
@@ -211,6 +237,42 @@ function renderDetail() {
     </div>
     ${hs.map((h) => `<p class="hol${h.kind === "observance" ? " obs" : ""}">${esc(holidayLabel(h))}</p>`).join("")}
     <dl class="facts">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>`;
+}
+
+function fastingFact(d) {
+  const fo = fastOn(d);
+  if (!fo) return '<span class="muted">No fast</span>';
+  const name = state.lang === "am" ? `<span lang="am">${esc(fo.fast.am)}</span>` : esc(fo.fast.en);
+  if (fo.dayNumber == null) return `<span class="fast-chip weekly">${name}</span>`;
+  return `<span class="fast-chip">${name}</span><br><span class="muted">day ${esc(n(fo.dayNumber))} of ${esc(n(fo.fast.days))}</span>`;
+}
+
+function renderFasts() {
+  const y = state.year;
+  $("fast-h").textContent = `Fasting seasons · ${n(y)}`;
+  const todayJdn = today.toJdn();
+  $("fasts").innerHTML = fastsFor(y)
+    .map((f) => {
+      const s = f.start.toJdn();
+      const e = f.end.toJdn();
+      const status = todayJdn > e ? " past" : todayJdn >= s ? " now" : "";
+      const range = f.days === 1
+        ? `${monthName(f.start.month, state.lang)} ${n(f.start.day)}`
+        : `${monthName(f.start.month, state.lang)} ${n(f.start.day)} – ${f.end.month === f.start.month ? "" : monthName(f.end.month, state.lang) + " "}${n(f.end.day)}`;
+      const g1 = f.start.toGregorian();
+      const g2 = f.end.toGregorian();
+      const gRange = f.days === 1
+        ? `${GREG_MONTHS[g1.month - 1].slice(0, 3)} ${g1.day}`
+        : `${GREG_MONTHS[g1.month - 1].slice(0, 3)} ${g1.day} – ${GREG_MONTHS[g2.month - 1].slice(0, 3)} ${g2.day}`;
+      return `<li class="${status.trim()}">
+        <button type="button" data-jdn="${s}">
+          <span class="bar"></span>
+          <span class="fname">${state.lang === "am" ? `<span lang="am">${esc(f.am)}</span>` : esc(f.en)}${status === " now" ? ' <span class="now-tag">now</span>' : ""}
+            <span class="when">${esc(range)} · ${esc(gRange)}</span></span>
+          <span class="len">${esc(n(f.days))}${f.days === 1 ? " day" : " days"}</span>
+        </button></li>`;
+    })
+    .join("");
 }
 
 function renderHolidays() {
@@ -331,6 +393,14 @@ $("theme-btn").addEventListener("click", () => {
   state.theme = dark ? "light" : "dark";
   savePref("theme", state.theme);
   render();
+});
+
+document.addEventListener("change", (e) => {
+  if (e.target.id === "fasts-toggle") {
+    state.fasts = e.target.checked ? "on" : "off";
+    savePref("fasts", state.fasts);
+    render();
+  }
 });
 
 $("conv-greg").addEventListener("input", convertFromGregorian);

@@ -183,6 +183,84 @@ export function holidayIndex(years) {
   return map;
 }
 
+// --- fasts -----------------------------------------------------------------
+// The seven fasts of the Ethiopian Orthodox Tewahedo Church. The movable ones hang
+// off Fasika (Orthodox Easter); the rest are fixed Ethiopian dates or the eves of
+// Genna/Timket, so every placement reuses holidaysFor + the package's JDN API.
+
+/** Easter-relative day offsets (Hudade = 55 days ending Holy Saturday). */
+const ABIY_TSOM_DAYS = 55;
+const NENEWE_OFFSET = -69; // Monday two weeks before Abiy Tsom, three days
+const PENTECOST_OFFSET = 49;
+
+function feast(year, prefix) {
+  return holidaysFor(year).find((h) => h.en.startsWith(prefix)).date;
+}
+
+/**
+ * Seasonal fasts for Ethiopian year `year`, as inclusive {start, end} ranges,
+ * sorted by start. Wednesday/Friday fasting is handled by `fastOn`.
+ */
+export function fastsFor(year) {
+  const fasika = feast(year, "Fasika");
+  const genna = feast(year, "Genna");
+  const timket = feast(year, "Timket");
+  const list = [
+    {
+      key: "nebiyat", am: "ጾመ ነቢያት", en: "Fast of the Prophets (Advent)",
+      start: new EthiopianDate(year, 3, 15), end: genna.addDays(-1),
+    },
+    {
+      key: "gahad", am: "ጾመ ገሀድ", en: "Gahad (Eve of Timket)",
+      start: timket.addDays(-1), end: timket.addDays(-1),
+    },
+    {
+      key: "nenewe", am: "ጾመ ነነዌ", en: "Fast of Nineveh",
+      start: fasika.addDays(NENEWE_OFFSET), end: fasika.addDays(NENEWE_OFFSET + 2),
+    },
+    {
+      key: "abiy", am: "ዐቢይ ጾም", en: "Abiy Tsom (Great Lent)",
+      start: fasika.addDays(-ABIY_TSOM_DAYS), end: fasika.addDays(-1),
+    },
+    {
+      key: "hawariyat", am: "ጾመ ሐዋርያት", en: "Fast of the Apostles",
+      start: fasika.addDays(PENTECOST_OFFSET + 1), end: new EthiopianDate(year, 11, 4),
+    },
+    {
+      key: "filseta", am: "ጾመ ፍልሰታ", en: "Filseta (Fast of the Assumption)",
+      start: new EthiopianDate(year, 12, 1), end: new EthiopianDate(year, 12, 15),
+    },
+  ];
+  return list
+    .map((f) => ({ ...f, days: f.start.daysUntil(f.end) + 1 }))
+    .sort((a, b) => a.start.toJdn() - b.start.toJdn());
+}
+
+export const WEEKLY_FAST = { key: "weekly", am: "ጾመ ድኅነት", en: "Wednesday & Friday fast" };
+
+/**
+ * The fast observed on `date`, or null. A seasonal fast wins; otherwise Wednesdays
+ * and Fridays fast, except in the fifty days from Fasika to Pentecost and on
+ * Genna or Timket themselves. Returns {fast, dayNumber} (dayNumber is 1-based
+ * within a seasonal fast, null for the weekly fast).
+ */
+export function fastOn(date) {
+  const jdn = date.toJdn();
+  for (const f of fastsFor(date.year)) {
+    if (jdn >= f.start.toJdn() && jdn <= f.end.toJdn()) {
+      return { fast: f, dayNumber: jdn - f.start.toJdn() + 1 };
+    }
+  }
+  const wd = date.weekday();
+  if (wd !== 2 && wd !== 4) return null; // ISO: 2 = Wednesday, 4 = Friday
+  const fasika = feast(date.year, "Fasika").toJdn();
+  if (jdn > fasika && jdn <= fasika + PENTECOST_OFFSET) return null;
+  const genna = feast(date.year, "Genna").toJdn();
+  const timket = feast(date.year, "Timket").toJdn();
+  if (jdn === genna || jdn === timket) return null;
+  return { fast: WEEKLY_FAST, dayNumber: null };
+}
+
 // --- day facts -------------------------------------------------------------
 
 /** Everything the detail panel shows for one date — all from the primitives. */

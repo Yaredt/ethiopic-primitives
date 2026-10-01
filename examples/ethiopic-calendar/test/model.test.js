@@ -15,6 +15,9 @@ import {
   julianToJdn,
   orthodoxEasterJulian,
   dayFacts,
+  fastsFor,
+  fastOn,
+  WEEKLY_FAST,
   parseIsoDate,
   isoGregorian,
 } from "../src/model.js";
@@ -103,4 +106,94 @@ test("ISO date parsing round-trips without Date/timezone", () => {
   assert.deepEqual(g, { year: 2026, month: 10, day: 1 });
   assert.equal(isoGregorian(g), "2026-10-01");
   assert.equal(parseIsoDate("nope"), null);
+});
+
+// --- fasts -----------------------------------------------------------------
+
+const byKey = (y) => Object.fromEntries(fastsFor(y).map((f) => [f.key, f]));
+const feastOf = (y, prefix) => holidaysFor(y).find((h) => h.en.startsWith(prefix)).date;
+const MON = 0, WED = 2, FRI = 4, SAT = 5, SUN = 6;
+
+test("fastsFor: six seasonal fasts inside their year, sorted and non-overlapping", () => {
+  for (let y = 1990; y <= 2060; y++) {
+    const fs = fastsFor(y);
+    assert.equal(fs.length, 6, `year ${y}`);
+    for (const f of fs) {
+      assert.equal(f.start.year, y);
+      assert.equal(f.end.year, y);
+      assert.equal(f.days, f.start.daysUntil(f.end) + 1);
+      assert.ok(f.days >= 1);
+    }
+    for (let i = 1; i < fs.length; i++) {
+      assert.ok(fs[i - 1].end.toJdn() < fs[i].start.toJdn(), `overlap in ${y}`);
+    }
+  }
+});
+
+test("Abiy Tsom: 55 days, Monday through the Saturday before Fasika", () => {
+  for (let y = 1990; y <= 2060; y++) {
+    const { abiy } = byKey(y);
+    assert.equal(abiy.days, 55);
+    assert.equal(abiy.start.weekday(), MON);
+    assert.equal(abiy.end.weekday(), SAT);
+    assert.equal(abiy.end.daysUntil(feastOf(y, "Fasika")), 1);
+  }
+});
+
+test("Nineveh: Monday–Wednesday, two weeks before Abiy Tsom", () => {
+  for (let y = 1990; y <= 2060; y++) {
+    const { nenewe, abiy } = byKey(y);
+    assert.equal(nenewe.days, 3);
+    assert.equal(nenewe.start.weekday(), MON);
+    assert.equal(nenewe.end.weekday(), WED);
+    assert.equal(nenewe.start.daysUntil(abiy.start), 14);
+  }
+});
+
+test("Apostles' fast: Monday after Pentecost through Hamle 4; Filseta Nehase 1–15", () => {
+  for (let y = 1990; y <= 2060; y++) {
+    const { hawariyat, filseta } = byKey(y);
+    assert.equal(hawariyat.start.weekday(), MON);
+    assert.equal(feastOf(y, "Fasika").daysUntil(hawariyat.start), 50);
+    assert.deepEqual([hawariyat.end.month, hawariyat.end.day], [11, 4]);
+    assert.deepEqual([filseta.start.month, filseta.start.day, filseta.days], [12, 1, 15]);
+  }
+});
+
+test("Advent ends the day before Genna; Gahad is the eve of Timket", () => {
+  for (let y = 1990; y <= 2060; y++) {
+    const { nebiyat, gahad } = byKey(y);
+    assert.equal(nebiyat.end.daysUntil(feastOf(y, "Genna")), 1);
+    assert.equal(gahad.days, 1);
+    assert.equal(gahad.end.daysUntil(feastOf(y, "Timket")), 1);
+  }
+});
+
+test("fastOn: seasonal days report their fast and day number", () => {
+  const { abiy } = byKey(2018);
+  const r = fastOn(abiy.start.addDays(9));
+  assert.equal(r.fast.key, "abiy");
+  assert.equal(r.dayNumber, 10);
+});
+
+test("fastOn: Wed/Fri fast outside seasons, never in the Fifty Days or on non-fast weekdays", () => {
+  for (let y = 2010; y <= 2030; y++) {
+    const fasika = feastOf(y, "Fasika");
+    const genna = feastOf(y, "Genna").toJdn();
+    const timket = feastOf(y, "Timket").toJdn();
+    const seasons = fastsFor(y);
+    const inSeason = (d) => seasons.some((f) => d.toJdn() >= f.start.toJdn() && d.toJdn() <= f.end.toJdn());
+    for (let d = new EthiopianDate(y, 1, 1); d.year === y; d = d.addDays(1)) {
+      const r = fastOn(d);
+      if (inSeason(d)) { assert.notEqual(r, null); continue; }
+      const wd = d.weekday();
+      const fifty = fasika.daysUntil(d) >= 1 && fasika.daysUntil(d) <= 49;
+      const feast = d.toJdn() === genna || d.toJdn() === timket;
+      const expected = (wd === WED || wd === FRI) && !fifty && !feast;
+      assert.equal(r !== null, expected, `${d}`);
+      if (r) assert.equal(r.fast, WEEKLY_FAST);
+    }
+    assert.equal(fastOn(fasika), null); // Easter Sunday itself
+    assert.equal(fasika.weekday(), SUN);
+  }
 });
