@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Ethiopian Calendar · ዘመን</title>
-    <meta name="description" content="An offline Ethiopian calendar built on @ethiopic-primitives — 13 months, Pagumē, Ge'ez numerals, holidays, Orthodox fasting seasons, and fiscal periods." />
+    <meta name="description" content="An offline Ethiopian calendar built on @ethiopic-primitives — 13 months, Pagumē, Ge'ez numerals, national, Orthodox, Islamic and cultural holidays, Orthodox fasting seasons, and fiscal periods." />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -92,8 +92,9 @@
 
         <section class="card" aria-labelledby="hol-h">
           <h3 id="hol-h"></h3>
+          <div class="chips" id="hol-filter" role="group" aria-label="Filter holidays"></div>
           <ul class="holidays" id="holidays"></ul>
-          <p class="note">Islamic holidays (Eid al-Fitr, Eid al-Adha, Mawlid) follow the lunar Hijri calendar and aren't shown.</p>
+          <p class="note"><b>≈</b> marks estimated dates. Islamic holidays are fixed each year by moon sighting and may move by a day; Irreecha is set by the Abba Gadaa councils. Former holidays are shown for reference and are not observed today.</p>
         </section>
       </aside>
     </main>

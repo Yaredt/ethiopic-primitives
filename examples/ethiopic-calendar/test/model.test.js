@@ -15,6 +15,11 @@ import {
   julianToJdn,
   orthodoxEasterJulian,
   dayFacts,
+  GROUPS,
+  hijriToJdn,
+  islamicToJdn,
+  jdnToUmmAlQura,
+  monthlyFeast,
   fastsFor,
   fastOn,
   WEEKLY_FAST,
@@ -196,4 +201,84 @@ test("fastOn: Wed/Fri fast outside seasons, never in the Fifty Days or on non-fa
     assert.equal(fastOn(fasika), null); // Easter Sunday itself
     assert.equal(fasika.weekday(), SUN);
   }
+});
+
+// --- holiday groups, Islamic and former holidays -------------------------------
+
+const named = (y, prefix) => holidaysFor(y).filter((h) => h.en.startsWith(prefix));
+
+test("every holiday has a known group and kind", () => {
+  const groups = new Set(GROUPS.map((g) => g.key));
+  for (let y = 1990; y <= 2060; y++) {
+    for (const h of holidaysFor(y)) {
+      assert.ok(groups.has(h.group), `${h.en} group ${h.group}`);
+      assert.ok(["public", "observance", "former"].includes(h.kind), `${h.en} kind ${h.kind}`);
+      assert.equal(h.kind === "former", h.group === "former", h.en);
+    }
+  }
+});
+
+test("each Islamic holiday occurs at least once in every Ethiopian year (lunar year is shorter)", () => {
+  for (let y = 1990; y <= 2060; y++) {
+    for (const name of ["Eid al-Fitr", "Eid al-Adha", "Mawlid", "Ramadan begins", "Islamic New Year", "Ashura"]) {
+      const hs = named(y, name);
+      assert.ok(hs.length >= 1 && hs.length <= 2, `${name} x${hs.length} in ${y}`);
+      for (const h of hs) assert.equal(h.estimated, true);
+    }
+  }
+});
+
+test("Islamic holidays keep their Hijri spacing (Arafah the eve of Eid al-Adha)", () => {
+  for (let y = 1990; y <= 2060; y++) {
+    for (const eid of named(y, "Eid al-Adha")) {
+      const arafah = holidaysFor(y).concat(holidaysFor(y - 1)).find((h) => h.en === "Day of Arafah" && h.date.daysUntil(eid.date) === 1);
+      assert.ok(arafah, `no Arafah before ${eid.date}`);
+    }
+  }
+});
+
+test("tabular Hijri epoch is 16 July 622 (Julian)", () => {
+  assert.equal(hijriToJdn(1, 1, 1), julianToJdn(622, 7, 16));
+});
+
+test("islamicToJdn agrees with Umm al-Qura when Intl has it, and stays near the tabular date", () => {
+  for (let hy = 1410; hy <= 1480; hy++) {
+    for (const [m, d] of [[1, 1], [3, 12], [9, 1], [10, 1], [12, 10]]) {
+      const jdn = islamicToJdn(hy, m, d);
+      assert.ok(Math.abs(jdn - hijriToJdn(hy, m, d)) <= 3);
+      const u = jdnToUmmAlQura(jdn);
+      if (u) assert.deepEqual(u, { y: hy, m, d });
+    }
+  }
+});
+
+test("Orthodox feasts keep their weekday and spacing rules", () => {
+  for (let y = 1990; y <= 2060; y++) {
+    const one = (p) => { const hs = named(y, p); assert.equal(hs.length, 1, `${p} in ${y}`); return hs[0].date; };
+    const fasika = one("Fasika");
+    assert.equal(one("Erget").weekday(), 3); // Thursday
+    assert.equal(fasika.daysUntil(one("Erget")), 39);
+    assert.equal(one("Peraklitos").weekday(), 6);
+    assert.equal(one("Debre Zeit").weekday(), 6);
+    assert.equal(one("Genna").daysUntil(one("Gizret")), 7); // "the eighth day", counted inclusively
+    assert.equal(one("Ketera").daysUntil(one("Timket")), 1);
+    assert.equal(one("Timket").daysUntil(one("Kana Zegelila")), 1);
+    assert.equal(one("Meskel Demera").daysUntil(one("Meskel (")), 1);
+  }
+});
+
+test("Irreecha is a Sunday in the week from Meskerem 22", () => {
+  for (let y = 1990; y <= 2060; y++) {
+    const d = named(y, "Irreecha")[0].date;
+    assert.equal(d.weekday(), 6);
+    assert.equal(d.month, 1);
+    assert.ok(d.day >= 22 && d.day <= 28);
+  }
+});
+
+test("monthlyFeast covers the main commemoration days and skips Pagume", () => {
+  assert.ok(monthlyFeast(new EthiopianDate(2018, 3, 12)));
+  assert.ok(monthlyFeast(new EthiopianDate(2018, 5, 29)));
+  assert.equal(monthlyFeast(new EthiopianDate(2018, 5, 2)), null);
+  assert.equal(monthlyFeast(new EthiopianDate(2019, 13, 5)), null);
 });
