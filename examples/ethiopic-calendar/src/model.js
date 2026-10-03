@@ -140,34 +140,201 @@ export function orthodoxEasterJulian(year) {
   return { year, month, day };
 }
 
+// --- Hijri (Islamic) calendar ----------------------------------------------
+// Ethiopia fixes Islamic holidays by local moon sighting, so no formula is exact and
+// these holidays are flagged `estimated`. The browser's built-in Umm al-Qura calendar
+// (Intl, offline) is usually right or a day out; where it's unavailable we fall back
+// to the arithmetic (tabular) calendar, which can run a day or two late.
+
+/** Hijri date → JDN, tabular Islamic calendar (civil epoch, 1 Muharram 1 AH). */
+export function hijriToJdn(y, m, d) {
+  return d + Math.ceil(29.5 * (m - 1)) + (y - 1) * 354 + Math.floor((3 + 11 * y) / 30) + 1948439;
+}
+
+const UNIX_EPOCH_JDN = 2440588;
+
+function makeUmmAlQura() {
+  try {
+    const f = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura-nu-latn", {
+      timeZone: "UTC", year: "numeric", month: "numeric", day: "numeric",
+    });
+    const probe = f.resolvedOptions().calendar;
+    return probe === "islamic-umalqura" ? f : null;
+  } catch {
+    return null;
+  }
+}
+const UMM_AL_QURA = makeUmmAlQura();
+
+/** JDN → Umm al-Qura Hijri {y, m, d}, or null when Intl lacks the calendar. */
+export function jdnToUmmAlQura(jdn) {
+  if (!UMM_AL_QURA) return null;
+  const parts = {};
+  for (const p of UMM_AL_QURA.formatToParts(new Date((jdn - UNIX_EPOCH_JDN) * 86400000))) parts[p.type] = p.value;
+  const y = parseInt(parts.year ?? parts.relatedYear, 10);
+  return Number.isFinite(y) ? { y, m: Number(parts.month), d: Number(parts.day) } : null;
+}
+
+/** Hijri date → JDN: Umm al-Qura when available (searched near the tabular date),
+ *  otherwise the tabular calendar. */
+export function islamicToJdn(y, m, d) {
+  const t = hijriToJdn(y, m, d);
+  for (let k = -3; k <= 3; k++) {
+    const h = jdnToUmmAlQura(t + k);
+    if (!h) break;
+    if (h.y === y && h.m === m && h.d === d) return t + k;
+  }
+  return t;
+}
+
+/** Hijri months used below (1-based). */
+const MUHARRAM = 1, RABI_AWWAL = 3, RAMADAN = 9, SHAWWAL = 10, DHU_HIJJAH = 12;
+
+const ISLAMIC = [
+  { m: MUHARRAM, d: 1, am: "የሂጅራ አዲስ ዓመት", en: "Islamic New Year", kind: "observance" },
+  { m: MUHARRAM, d: 10, am: "አሹራ", en: "Ashura", kind: "observance" },
+  { m: RABI_AWWAL, d: 12, am: "መውሊድ", en: "Mawlid (Prophet's Birthday)", kind: "public" },
+  { m: RAMADAN, d: 1, am: "ረመዳን ይጀምራል", en: "Ramadan begins", kind: "observance" },
+  { m: RAMADAN, d: 27, am: "ለይለተል ቀድር", en: "Laylat al-Qadr", kind: "observance" },
+  { m: SHAWWAL, d: 1, am: "ዒድ አል ፈጥር", en: "Eid al-Fitr", kind: "public" },
+  { m: DHU_HIJJAH, d: 9, am: "የዐረፋ ቀን", en: "Day of Arafah", kind: "observance" },
+  { m: DHU_HIJJAH, d: 10, am: "ዒድ አል አድሐ (አረፋ)", en: "Eid al-Adha", kind: "public" },
+];
+
+/** Islamic holidays whose (estimated) date falls in Ethiopian year `year`. A lunar
+ *  year is ~11 days shorter, so one holiday can occur twice in a solar year. */
+function islamicHolidays(year) {
+  const first = new EthiopianDate(year, 1, 1).toJdn();
+  const last = new EthiopianDate(year, 13, EthiopianDate.daysInMonth(year, 13)).toJdn();
+  const approxHijri = Math.floor(((year + 8 - 622) * 33) / 32);
+  const out = [];
+  for (let hy = approxHijri - 2; hy <= approxHijri + 2; hy++) {
+    for (const h of ISLAMIC) {
+      const jdn = islamicToJdn(hy, h.m, h.d);
+      if (jdn >= first && jdn <= last) {
+        out.push({ ...h, date: EthiopianDate.fromJdn(jdn), group: "islamic", estimated: true });
+      }
+    }
+  }
+  return out;
+}
+
+// --- holidays --------------------------------------------------------------
+
+/** Holiday groups, in display order. `kind` is orthogonal: public (a day off),
+ *  observance (marked, not a day off) or former (no longer observed). */
+export const GROUPS = [
+  { key: "civic", am: "ብሔራዊ", en: "National" },
+  { key: "orthodox", am: "ኦርቶዶክስ", en: "Orthodox" },
+  { key: "islamic", am: "እስልምና", en: "Islamic" },
+  { key: "cultural", am: "ባህላዊ", en: "Cultural" },
+  { key: "former", am: "የቀድሞ", en: "Former" },
+];
+
 /**
- * Selected holidays for Ethiopian year `year` (Amete Mihret), sorted by date.
- * Islamic holidays follow the lunar Hijri calendar and are not computed here.
+ * Holidays and observances for Ethiopian year `year` (Amete Mihret), sorted by date.
+ * Each entry: {date, am, en, kind, group, estimated?, note?}.
  */
 export function holidaysFor(year) {
   const gStart = year + 7; // Meskerem falls in Gregorian September of this year
   const gEnd = year + 8;
   const fromJdn = (jdn) => EthiopianDate.fromJdn(jdn);
+  const eth = (m, d) => new EthiopianDate(year, m, d);
+  const greg = (gy, m, d) => fromJdn(gregorianToJdn(gy, m, d));
   const easter = orthodoxEasterJulian(gEnd);
   const easterJdn = julianToJdn(easter.year, easter.month, easter.day);
+  const fasika = (offset) => fromJdn(easterJdn + offset);
+
+  // Irreecha: Oromo thanksgiving, on a Sunday in early Tikimt set by the Abba Gadaa
+  // councils. Approximated as the first Sunday on or after Meskerem 22.
+  const m22 = eth(1, 22);
+  const irreecha = m22.addDays((6 - m22.weekday() + 7) % 7);
+
+  const civic = [
+    { date: eth(1, 1), am: "እንቁጣጣሽ", en: "Enkutatash (New Year)", kind: "public" },
+    { date: eth(6, 23), am: "የዓድዋ ድል", en: "Adwa Victory Day", kind: "public" },
+    { date: greg(gEnd, 5, 1), am: "የሠራተኞች ቀን", en: "International Labour Day", kind: "public" },
+    { date: eth(8, 27), am: "የአርበኞች ቀን", en: "Patriots' Victory Day", kind: "public" },
+    { date: eth(9, 20), am: "ግንቦት ፳", en: "Downfall of the Derg", kind: "public" },
+    { date: eth(3, 29), am: "የብሔር ብሔረሰቦች ቀን", en: "Nations, Nationalities & Peoples' Day", kind: "observance" },
+    { date: eth(6, 12), am: "የሰማዕታት ቀን", en: "Martyrs' Day (Yekatit 12)", kind: "observance",
+      note: "Remembers the victims of the 1937 Addis Ababa massacre." },
+    { date: greg(gEnd, 3, 8), am: "የሴቶች ቀን", en: "International Women's Day", kind: "observance" },
+    { date: greg(gEnd, 5, 25), am: "የአፍሪካ ቀን", en: "Africa Day", kind: "observance" },
+  ];
+  const orthodox = [
+    { date: eth(1, 16), am: "የመስቀል ደመራ", en: "Meskel Demera (bonfire eve)", kind: "observance" },
+    { date: eth(1, 17), am: "መስቀል", en: "Meskel (Finding of the True Cross)", kind: "public" },
+    { date: eth(3, 12), am: "ኅዳር ሚካኤል", en: "Hidar Mikael (St. Michael)", kind: "observance" },
+    { date: eth(3, 21), am: "ኅዳር ጽዮን", en: "Hidar Tsion (St. Mary of Zion)", kind: "observance" },
+    { date: eth(4, 19), am: "ቁልቢ ገብርኤል", en: "Kulubi Gabriel", kind: "observance" },
+    { date: fromJdn(julianToJdn(gStart, 12, 25)), am: "ገና", en: "Genna (Christmas)", kind: "public" },
+    { date: fromJdn(julianToJdn(gEnd, 1, 1)), am: "ግዝረት", en: "Gizret (Circumcision of Christ)", kind: "observance" },
+    { date: fromJdn(julianToJdn(gEnd, 1, 5)), am: "ከተራ", en: "Ketera (Eve of Timket)", kind: "observance" },
+    { date: fromJdn(julianToJdn(gEnd, 1, 6)), am: "ጥምቀት", en: "Timket (Epiphany)", kind: "public" },
+    { date: fromJdn(julianToJdn(gEnd, 1, 7)), am: "ቃና ዘገሊላ", en: "Kana Zegelila (Wedding at Cana)", kind: "observance" },
+    { date: eth(6, 16), am: "ኪዳነ ምሕረት", en: "Kidane Mehret (Covenant of Mercy)", kind: "observance" },
+    { date: fasika(-28), am: "ደብረ ዘይት", en: "Debre Zeit (Mid-Lent)", kind: "observance" },
+    { date: eth(7, 29), am: "ፅንሰት (ብሥራት)", en: "Tsinset (Annunciation)", kind: "observance" },
+    { date: fasika(-7), am: "ሆሳዕና", en: "Hosanna (Palm Sunday)", kind: "observance" },
+    { date: fasika(-2), am: "ስቅለት", en: "Siklet (Good Friday)", kind: "public" },
+    { date: fasika(0), am: "ፋሲካ", en: "Fasika (Easter)", kind: "public" },
+    { date: eth(8, 23), am: "ቅዱስ ጊዮርጊስ", en: "St. George (Giyorgis)", kind: "observance" },
+    { date: eth(9, 1), am: "ልደታ ለማርያም", en: "Lideta Mariam (Birth of Mary)", kind: "observance" },
+    { date: eth(9, 11), am: "ቅዱስ ያሬድ", en: "St. Yared", kind: "observance" },
+    { date: fasika(39), am: "ዕርገት", en: "Erget (Ascension)", kind: "observance" },
+    { date: fasika(49), am: "ጰራቅሊጦስ", en: "Peraklitos (Pentecost)", kind: "observance" },
+    { date: eth(11, 5), am: "ጴጥሮስ ወጳውሎስ", en: "Saints Peter & Paul", kind: "observance" },
+    { date: eth(11, 19), am: "ሐምሌ ገብርኤል", en: "Kulubi Gabriel (Hamle)", kind: "observance" },
+    { date: eth(12, 13), am: "ቡሄ (ደብረ ታቦር)", en: "Buhe / Debre Tabor (Transfiguration)", kind: "observance" },
+    { date: eth(12, 16), am: "ፍልሰታ ለማርያም", en: "Filseta (Assumption of Mary)", kind: "observance" },
+    { date: eth(12, 24), am: "ተክለ ሃይማኖት", en: "St. Tekle Haymanot", kind: "observance" },
+  ];
+  const cultural = [
+    { date: irreecha, am: "ኢሬቻ", en: "Irreecha (Oromo thanksgiving)", kind: "observance", estimated: true,
+      note: "Held on a Sunday in early October; the exact day is announced by the Abba Gadaa councils." },
+    { date: eth(12, 16), am: "አሸንዳ · ሻደይ · ሶለል", en: "Ashenda / Shadey / Solel (girls' festival)", kind: "observance",
+      note: "Celebrated in Tigray and Amhara for several days from the end of the Filseta fast." },
+  ];
+  const former = [
+    { date: eth(1, 2), am: "የአብዮት ቀን", en: "Revolution Day", kind: "former",
+      note: "Derg-era public holiday (1975–1991) marking the 1974 overthrow of Haile Selassie." },
+    { date: eth(2, 23), am: "የንግሥ በዓል", en: "Coronation Day", kind: "former",
+      note: "Imperial-era holiday for Haile Selassie's 1930 coronation; still marked by Rastafari." },
+    { date: eth(11, 16), am: "የቀዳማዊ ኃይለ ሥላሴ ልደት", en: "Haile Selassie's Birthday", kind: "former",
+      note: "Imperial-era holiday; still marked by Rastafari." },
+  ];
 
   const list = [
-    { date: new EthiopianDate(year, 1, 1), am: "እንቁጣጣሽ", en: "Enkutatash (New Year)", kind: "public" },
-    { date: new EthiopianDate(year, 1, 17), am: "መስቀል", en: "Meskel (Finding of the True Cross)", kind: "public" },
-    { date: fromJdn(julianToJdn(gStart, 12, 25)), am: "ገና", en: "Genna (Christmas)", kind: "public" },
-    { date: fromJdn(julianToJdn(gEnd, 1, 6)), am: "ጥምቀት", en: "Timket (Epiphany)", kind: "public" },
-    { date: new EthiopianDate(year, 6, 23), am: "የዓድዋ ድል", en: "Adwa Victory Day", kind: "public" },
-    { date: fromJdn(easterJdn - 7), am: "ሆሳዕና", en: "Hosanna (Palm Sunday)", kind: "observance" },
-    { date: fromJdn(easterJdn - 2), am: "ስቅለት", en: "Siklet (Good Friday)", kind: "public" },
-    { date: fromJdn(easterJdn), am: "ፋሲካ", en: "Fasika (Easter)", kind: "public" },
-    { date: fromJdn(gregorianToJdn(gEnd, 5, 1)), am: "የሠራተኞች ቀን", en: "International Labour Day", kind: "public" },
-    { date: new EthiopianDate(year, 8, 27), am: "የአርበኞች ቀን", en: "Patriots' Victory Day", kind: "public" },
-    { date: new EthiopianDate(year, 9, 20), am: "ግንቦት ፳", en: "Downfall of the Derg", kind: "public" },
-    { date: new EthiopianDate(year, 12, 13), am: "ቡሄ", en: "Buhe (Transfiguration)", kind: "observance" },
+    ...civic.map((h) => ({ ...h, group: "civic" })),
+    ...orthodox.map((h) => ({ ...h, group: "orthodox" })),
+    ...islamicHolidays(year),
+    ...cultural.map((h) => ({ ...h, group: "cultural" })),
+    ...former.map((h) => ({ ...h, group: "former" })),
   ];
   return list
     .filter((h) => h.date.year === year)
-    .sort((x, y) => x.date.toJdn() - y.date.toJdn());
+    .sort((x, y) => x.date.toJdn() - y.date.toJdn() || (x.kind === "public" ? -1 : y.kind === "public" ? 1 : 0));
+}
+
+/** Monthly commemorations (ወርኃዊ በዓላት), keyed by day of the month. */
+const MONTHLY = {
+  1: { am: "ልደታ", en: "Lideta (Birth of Mary)" },
+  3: { am: "በዓታ ለማርያም", en: "Ba'eta Mariam (Presentation of Mary)" },
+  5: { am: "አቦ (ገብረ መንፈስ ቅዱስ)", en: "Abo (Gebre Menfes Kidus)" },
+  7: { am: "ሥላሴ", en: "Holy Trinity (Selassie)" },
+  12: { am: "ሚካኤል", en: "St. Michael" },
+  16: { am: "ኪዳነ ምሕረት", en: "Kidane Mehret" },
+  19: { am: "ገብርኤል", en: "St. Gabriel" },
+  21: { am: "ማርያም", en: "St. Mary" },
+  23: { am: "ጊዮርጊስ", en: "St. George" },
+  24: { am: "ተክለ ሃይማኖት", en: "St. Tekle Haymanot" },
+  27: { am: "መድኃኔ ዓለም", en: "Medhane Alem (Saviour of the World)" },
+  29: { am: "በዓለ ወልድ", en: "Bale Wold (Feast of the Son)" },
+};
+/** The saint or feast the Orthodox Church commemorates on this day of every month, or null. */
+export function monthlyFeast(date) {
+  return date.month === 13 ? null : MONTHLY[date.day] || null;
 }
 
 /** Map of JDN → holidays, for the years a grid may touch. */

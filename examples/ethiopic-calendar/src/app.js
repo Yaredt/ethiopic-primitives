@@ -13,6 +13,8 @@ import {
   shiftMonth,
   holidaysFor,
   holidayIndex,
+  monthlyFeast,
+  GROUPS,
   fastsFor,
   fastOn,
   dayFacts,
@@ -49,6 +51,7 @@ const state = {
   theme: loadPref("theme", "", ["", "light", "dark"]),
   view: loadPref("view", "month", ["month", "year"]),
   fasts: loadPref("fasts", "on", ["on", "off"]),
+  holFilter: loadPref("holFilter", "all", ["all", "public", ...GROUPS.map((g) => g.key)]),
   year: today.year,
   month: today.month,
   selected: today,
@@ -84,6 +87,24 @@ function fastClass(date) {
 }
 function holidayLabel(h) {
   return state.lang === "am" ? `${h.am} · ${h.en}` : h.en;
+}
+/** Holidays pass the current filter chip (all / public / a group). */
+function shown(h) {
+  const f = state.holFilter;
+  return f === "all" || (f === "public" ? h.kind === "public" : h.group === f);
+}
+function groupName(key) {
+  const g = GROUPS.find((x) => x.key === key);
+  return state.lang === "am" ? g.am : g.en;
+}
+/** CSS class for a set of same-day holidays: the strongest kind wins. */
+function holClass(hs) {
+  if (hs.some((h) => h.kind === "public")) return "pub";
+  if (hs.some((h) => h.kind === "observance")) return "obs-only";
+  return "former-only";
+}
+function shortName(h) {
+  return state.lang === "am" ? h.am : h.en.replace(/ \(.*\)$/, "");
 }
 
 // --- render -------------------------------------------------------------------------
@@ -132,12 +153,12 @@ function renderMonth() {
     week.forEach((cell, c) => {
       const { date, greg, outside } = cell;
       const jdn = date.toJdn();
-      const hs = hol.get(jdn) || [];
-      const pub = hs.filter((h) => h.kind === "public");
+      const hs = (hol.get(jdn) || []).filter(shown);
+      const hc = hs.length ? holClass(hs) : "";
       const cls = ["day"];
       if (outside) cls.push("outside");
       if (c === 6) cls.push("sun");
-      if (hs.length) cls.push("holiday", pub.length ? "pub" : "obs-only");
+      if (hs.length) cls.push("holiday", hc);
       const fc = fastClass(date);
       if (fc) cls.push(fc);
       if (jdn === todayJdn) cls.push("today");
@@ -145,13 +166,13 @@ function renderMonth() {
       const gLabel = greg.day === 1 || (r === 0 && c === 0) || (!outside && date.day === 1)
         ? `${GREG_MONTHS[greg.month - 1].slice(0, 3)} ${greg.day}`
         : String(greg.day);
-      const hText = hs.map((h) => (state.lang === "am" ? h.am : h.en.replace(/ \(.*\)$/, ""))).join(" · ");
+      const hText = hs.map((h) => shortName(h) + (h.estimated ? " ≈" : "")).join(" · ");
       const fo = fc ? fastOn(date) : null;
       const aria = `${ethLong(date)}; ${gregLong(greg)}${hs.length ? "; " + hs.map((h) => h.en).join(", ") : ""}${fo ? "; " + fo.fast.en : ""}`;
       html += `<button type="button" role="gridcell" class="${cls.join(" ")}" data-jdn="${jdn}" tabindex="${jdn === selJdn ? 0 : -1}" aria-label="${esc(aria)}" aria-selected="${jdn === selJdn}">
         <span class="n">${esc(n(date.day))}</span>
         <span class="g">${esc(gLabel)}</span>
-        ${hs.length ? `<span class="h${pub.length ? "" : " obs"}">${esc(hText)}</span>` : ""}
+        ${hs.length ? `<span class="h ${hc}">${esc(hText)}</span>` : ""}
       </button>`;
     });
     html += "</div>";
@@ -190,7 +211,9 @@ function renderYear() {
     for (const week of monthGrid(year, m)) {
       week.forEach((cell, c) => {
         const jdn = cell.date.toJdn();
-        const base = cell.outside ? "o" : jdn === todayJdn ? "t" : hol.has(jdn) ? "hd" : c === 6 ? "su" : "";
+        const hs = (hol.get(jdn) || []).filter(shown);
+        const hk = hs.length ? holClass(hs) : "";
+        const base = cell.outside ? "o" : jdn === todayJdn ? "t" : hk === "pub" ? "hd" : hk === "obs-only" ? "ho" : c === 6 ? "su" : "";
         const cls = cell.outside ? base : `${base} ${fastClass(cell.date)}`.trim();
         html += `<span class="${cls}">${cell.outside ? "" : esc(n(cell.date.day))}</span>`;
       });
@@ -206,7 +229,8 @@ function legend() {
   const on = state.fasts === "on";
   return `<div class="legend">
     <span><i class="lg-hol"></i>Public holiday</span>
-    <span><i class="lg-obs"></i>Observance</span>
+    <span><i class="lg-obs"></i>Feast / observance</span>
+    <span><i class="lg-former"></i>Former holiday</span>
     ${on ? `<span><i class="lg-fast"></i>Fasting season</span><span><i class="lg-weekly"></i>Wed &amp; Fri fast</span>` : ""}
     <label class="switch"><input type="checkbox" id="fasts-toggle"${on ? " checked" : ""} /> Show fasts</label>
   </div>`;
@@ -225,6 +249,7 @@ function renderDetail() {
     ["Amete Alem", esc(n(f.alemYear))],
     ["Fiscal", `FY ${esc(n(f.fiscal.year))} · Q${esc(n(f.fiscal.quarter))} · P${esc(n(f.fiscal.period))}`],
     ["Fasting", fastingFact(d)],
+    ["Monthly feast", monthlyFact(d)],
     ["Relative", esc(relative(f.fromToday))],
   ];
   $("detail").innerHTML = `
@@ -235,8 +260,27 @@ function renderDetail() {
         <div class="subline">${esc(ethShort(d, other()))}</div>
       </div>
     </div>
-    ${hs.map((h) => `<p class="hol${h.kind === "observance" ? " obs" : ""}">${esc(holidayLabel(h))}</p>`).join("")}
+    ${hs.map(holidayCard).join("")}
     <dl class="facts">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>`;
+}
+
+function holidayCard(h) {
+  const kind = h.kind === "public" ? "Public holiday" : h.kind === "former" ? "No longer observed" : "Not a day off";
+  const extra = [
+    h.estimated ? (h.group === "islamic" ? "Estimated — set by moon sighting, may differ by a day" : "Approximate date") : "",
+    h.note || "",
+  ].filter(Boolean);
+  return `<div class="hol ${h.kind}">
+    <b>${esc(holidayLabel(h))}${h.estimated ? " ≈" : ""}</b>
+    <span class="hol-meta">${esc(groupName(h.group))} · ${esc(kind)}</span>
+    ${extra.map((t) => `<span class="hol-note">${esc(t)}</span>`).join("")}
+  </div>`;
+}
+
+function monthlyFact(d) {
+  const m = monthlyFeast(d);
+  if (!m) return '<span class="muted">—</span>';
+  return state.lang === "am" ? `<span lang="am">${esc(m.am)}</span>` : esc(m.en);
 }
 
 function fastingFact(d) {
@@ -277,20 +321,40 @@ function renderFasts() {
 
 function renderHolidays() {
   const y = state.year;
+  const all = holidaysFor(y);
+  const list = all.filter(shown);
   $("hol-h").textContent = `Holidays · ${n(y)}`;
-  const todayJdn = today.toJdn();
-  $("holidays").innerHTML = holidaysFor(y)
-    .map((h) => {
-      const past = h.date.toJdn() < todayJdn;
-      const g = h.date.toGregorian();
-      return `<li class="${h.kind === "observance" ? "obs" : ""}${past ? " past" : ""}">
-        <button type="button" data-jdn="${h.date.toJdn()}">
-          <span class="dot"></span>
-          <span>${state.lang === "am" ? `<span lang="am">${esc(h.am)}</span>` : esc(h.en)}</span>
-          <span class="when">${esc(monthName(h.date.month, state.lang))} ${esc(n(h.date.day))} · ${GREG_MONTHS[g.month - 1].slice(0, 3)} ${g.day}</span>
-        </button></li>`;
+  const chips = [
+    { key: "all", label: state.lang === "am" ? "ሁሉም" : "All" },
+    { key: "public", label: state.lang === "am" ? "የሕዝብ በዓል" : "Public" },
+    ...GROUPS.map((g) => ({ key: g.key, label: groupName(g.key) })),
+  ];
+  $("hol-filter").innerHTML = chips
+    .map((c) => {
+      const count = c.key === "all" ? all.length : all.filter((h) => (c.key === "public" ? h.kind === "public" : h.group === c.key)).length;
+      return `<button type="button" data-hol-filter="${c.key}" aria-pressed="${state.holFilter === c.key}">${esc(c.label)} <span>${esc(n(count))}</span></button>`;
     })
     .join("");
+
+  const todayJdn = today.toJdn();
+  let html = "";
+  let month = 0;
+  for (const h of list) {
+    if (h.date.month !== month) {
+      month = h.date.month;
+      html += `<li class="mhead">${esc(monthName(month, state.lang))}</li>`;
+    }
+    const past = h.date.toJdn() < todayJdn;
+    const g = h.date.toGregorian();
+    html += `<li class="${h.kind}${past ? " past" : ""}">
+        <button type="button" data-jdn="${h.date.toJdn()}">
+          <span class="dot"></span>
+          <span class="hname"><span>${state.lang === "am" ? `<span lang="am">${esc(h.am)}</span>` : esc(h.en)}${h.estimated ? ' <span class="est" title="Estimated date">≈</span>' : ""}</span>
+            <span class="tag">${esc(groupName(h.group))}${h.kind === "public" ? " · " + (state.lang === "am" ? "የሕዝብ በዓል" : "public") : ""}</span></span>
+          <span class="when">${esc(n(h.date.day))} · ${GREG_MONTHS[g.month - 1].slice(0, 3)} ${g.day}</span>
+        </button></li>`;
+  }
+  $("holidays").innerHTML = html || `<li class="empty">None this year.</li>`;
 }
 
 function renderConverterMonths() {
@@ -367,6 +431,7 @@ document.addEventListener("click", (e) => {
   if (!t) return;
   if (t.dataset.lang) { state.lang = t.dataset.lang; savePref("lang", state.lang); render(); syncConverter(state.selected); return; }
   if (t.dataset.num) { state.numerals = t.dataset.num; savePref("num", state.numerals); render(); syncConverter(state.selected); return; }
+  if (t.dataset.holFilter) { state.holFilter = t.dataset.holFilter; savePref("holFilter", state.holFilter); render(); return; }
   if (t.dataset.view) { state.view = t.dataset.view; savePref("view", state.view); render(); return; }
   if (t.dataset.month) {
     state.month = Number(t.dataset.month);
