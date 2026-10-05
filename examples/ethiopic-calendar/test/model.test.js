@@ -203,7 +203,7 @@ test("fastOn: Wed/Fri fast outside seasons, never in the Fifty Days or on non-fa
   }
 });
 
-// --- holiday groups, Islamic and former holidays -------------------------------
+// --- holiday groups and Islamic holidays ---------------------------------------
 
 const named = (y, prefix) => holidaysFor(y).filter((h) => h.en.startsWith(prefix));
 
@@ -212,8 +212,7 @@ test("every holiday has a known group and kind", () => {
   for (let y = 1990; y <= 2060; y++) {
     for (const h of holidaysFor(y)) {
       assert.ok(groups.has(h.group), `${h.en} group ${h.group}`);
-      assert.ok(["public", "observance", "former"].includes(h.kind), `${h.en} kind ${h.kind}`);
-      assert.equal(h.kind === "former", h.group === "former", h.en);
+      assert.ok(["public", "observance"].includes(h.kind), `${h.en} kind ${h.kind}`);
     }
   }
 });
@@ -276,9 +275,13 @@ test("Irreecha is a Sunday in the week from Meskerem 22", () => {
   }
 });
 
-test("monthlyFeast covers the main commemoration days and skips Pagume", () => {
-  assert.ok(monthlyFeast(new EthiopianDate(2018, 3, 12)));
-  assert.ok(monthlyFeast(new EthiopianDate(2018, 5, 29)));
-  assert.equal(monthlyFeast(new EthiopianDate(2018, 5, 2)), null);
-  assert.equal(monthlyFeast(new EthiopianDate(2019, 13, 5)), null);
+test("monthlyFeast has a commemoration for every day 1–30 and none in Pagume", () => {
+  for (let day = 1; day <= 30; day++) {
+    const list = monthlyFeast(new EthiopianDate(2018, 5, day));
+    assert.ok(list.length >= 1, `day ${day}`);
+    for (const m of list) assert.ok(m.am && m.en, `day ${day}`);
+  }
+  // The same day of any month gives the same commemorations.
+  assert.deepEqual(monthlyFeast(new EthiopianDate(2018, 1, 12)), monthlyFeast(new EthiopianDate(2018, 9, 12)));
+  assert.deepEqual(monthlyFeast(new EthiopianDate(2019, 13, 5)), []);
 });

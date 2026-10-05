@@ -51,6 +51,7 @@ const state = {
   theme: loadPref("theme", "", ["", "light", "dark"]),
   view: loadPref("view", "month", ["month", "year"]),
   fasts: loadPref("fasts", "on", ["on", "off"]),
+  saints: loadPref("saints", "on", ["on", "off"]),
   holFilter: loadPref("holFilter", "all", ["all", "public", ...GROUPS.map((g) => g.key)]),
   year: today.year,
   month: today.month,
@@ -99,9 +100,7 @@ function groupName(key) {
 }
 /** CSS class for a set of same-day holidays: the strongest kind wins. */
 function holClass(hs) {
-  if (hs.some((h) => h.kind === "public")) return "pub";
-  if (hs.some((h) => h.kind === "observance")) return "obs-only";
-  return "former-only";
+  return hs.some((h) => h.kind === "public") ? "pub" : "obs-only";
 }
 function shortName(h) {
   return state.lang === "am" ? h.am : h.en.replace(/ \(.*\)$/, "");
@@ -167,12 +166,14 @@ function renderMonth() {
         ? `${GREG_MONTHS[greg.month - 1].slice(0, 3)} ${greg.day}`
         : String(greg.day);
       const hText = hs.map((h) => shortName(h) + (h.estimated ? " ≈" : "")).join(" · ");
+      const saint = !hs.length && state.saints === "on" ? monthlyFeast(date)[0] : null;
       const fo = fc ? fastOn(date) : null;
       const aria = `${ethLong(date)}; ${gregLong(greg)}${hs.length ? "; " + hs.map((h) => h.en).join(", ") : ""}${fo ? "; " + fo.fast.en : ""}`;
       html += `<button type="button" role="gridcell" class="${cls.join(" ")}" data-jdn="${jdn}" tabindex="${jdn === selJdn ? 0 : -1}" aria-label="${esc(aria)}" aria-selected="${jdn === selJdn}">
         <span class="n">${esc(n(date.day))}</span>
         <span class="g">${esc(gLabel)}</span>
         ${hs.length ? `<span class="h ${hc}">${esc(hText)}</span>` : ""}
+        ${saint ? `<span class="h saint">${esc(state.lang === "am" ? saint.am : saint.en.replace(/ \(.*\)$/, ""))}</span>` : ""}
       </button>`;
     });
     html += "</div>";
@@ -230,9 +231,11 @@ function legend() {
   return `<div class="legend">
     <span><i class="lg-hol"></i>Public holiday</span>
     <span><i class="lg-obs"></i>Feast / observance</span>
-    <span><i class="lg-former"></i>Former holiday</span>
     ${on ? `<span><i class="lg-fast"></i>Fasting season</span><span><i class="lg-weekly"></i>Wed &amp; Fri fast</span>` : ""}
-    <label class="switch"><input type="checkbox" id="fasts-toggle"${on ? " checked" : ""} /> Show fasts</label>
+    <span class="toggles">
+      <label class="switch"><input type="checkbox" id="saints-toggle"${state.saints === "on" ? " checked" : ""} /> Show saints' days</label>
+      <label class="switch"><input type="checkbox" id="fasts-toggle"${on ? " checked" : ""} /> Show fasts</label>
+    </span>
   </div>`;
 }
 
@@ -249,7 +252,6 @@ function renderDetail() {
     ["Amete Alem", esc(n(f.alemYear))],
     ["Fiscal", `FY ${esc(n(f.fiscal.year))} · Q${esc(n(f.fiscal.quarter))} · P${esc(n(f.fiscal.period))}`],
     ["Fasting", fastingFact(d)],
-    ["Monthly feast", monthlyFact(d)],
     ["Relative", esc(relative(f.fromToday))],
   ];
   $("detail").innerHTML = `
@@ -261,11 +263,12 @@ function renderDetail() {
       </div>
     </div>
     ${hs.map(holidayCard).join("")}
-    <dl class="facts">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>`;
+    <dl class="facts">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>
+    ${monthlyBlock(d)}`;
 }
 
 function holidayCard(h) {
-  const kind = h.kind === "public" ? "Public holiday" : h.kind === "former" ? "No longer observed" : "Not a day off";
+  const kind = h.kind === "public" ? "Public holiday" : "Not a day off";
   const extra = [
     h.estimated ? (h.group === "islamic" ? "Estimated — set by moon sighting, may differ by a day" : "Approximate date") : "",
     h.note || "",
@@ -277,10 +280,15 @@ function holidayCard(h) {
   </div>`;
 }
 
-function monthlyFact(d) {
-  const m = monthlyFeast(d);
-  if (!m) return '<span class="muted">—</span>';
-  return state.lang === "am" ? `<span lang="am">${esc(m.am)}</span>` : esc(m.en);
+/** The day's monthly commemorations (ወርኃዊ በዓላት), principal first. */
+function monthlyBlock(d) {
+  const list = monthlyFeast(d);
+  if (!list.length) return "";
+  const name = (m) => (state.lang === "am" ? `<span lang="am">${esc(m.am)}</span> <span class="muted">· ${esc(m.en)}</span>` : esc(m.en));
+  return `<div class="monthly">
+    <h4>${state.lang === "am" ? "ወርኃዊ በዓል" : "Monthly commemoration"} · ${esc(n(d.day))}</h4>
+    <ul>${list.map((m, i) => `<li${i === 0 ? ' class="main"' : ""}>${name(m)}</li>`).join("")}</ul>
+  </div>`;
 }
 
 function fastingFact(d) {
@@ -461,6 +469,11 @@ $("theme-btn").addEventListener("click", () => {
 });
 
 document.addEventListener("change", (e) => {
+  if (e.target.id === "saints-toggle") {
+    state.saints = e.target.checked ? "on" : "off";
+    savePref("saints", state.saints);
+    render();
+  }
   if (e.target.id === "fasts-toggle") {
     state.fasts = e.target.checked ? "on" : "off";
     savePref("fasts", state.fasts);

@@ -221,14 +221,13 @@ function islamicHolidays(year) {
 
 // --- holidays --------------------------------------------------------------
 
-/** Holiday groups, in display order. `kind` is orthogonal: public (a day off),
- *  observance (marked, not a day off) or former (no longer observed). */
+/** Holiday groups, in display order. `kind` is orthogonal: public (a day off) or
+ *  observance (marked, not a day off). */
 export const GROUPS = [
   { key: "civic", am: "ብሔራዊ", en: "National" },
   { key: "orthodox", am: "ኦርቶዶክስ", en: "Orthodox" },
   { key: "islamic", am: "እስልምና", en: "Islamic" },
   { key: "cultural", am: "ባህላዊ", en: "Cultural" },
-  { key: "former", am: "የቀድሞ", en: "Former" },
 ];
 
 /**
@@ -296,45 +295,60 @@ export function holidaysFor(year) {
     { date: eth(12, 16), am: "አሸንዳ · ሻደይ · ሶለል", en: "Ashenda / Shadey / Solel (girls' festival)", kind: "observance",
       note: "Celebrated in Tigray and Amhara for several days from the end of the Filseta fast." },
   ];
-  const former = [
-    { date: eth(1, 2), am: "የአብዮት ቀን", en: "Revolution Day", kind: "former",
-      note: "Derg-era public holiday (1975–1991) marking the 1974 overthrow of Haile Selassie." },
-    { date: eth(2, 23), am: "የንግሥ በዓል", en: "Coronation Day", kind: "former",
-      note: "Imperial-era holiday for Haile Selassie's 1930 coronation; still marked by Rastafari." },
-    { date: eth(11, 16), am: "የቀዳማዊ ኃይለ ሥላሴ ልደት", en: "Haile Selassie's Birthday", kind: "former",
-      note: "Imperial-era holiday; still marked by Rastafari." },
-  ];
-
   const list = [
     ...civic.map((h) => ({ ...h, group: "civic" })),
     ...orthodox.map((h) => ({ ...h, group: "orthodox" })),
     ...islamicHolidays(year),
     ...cultural.map((h) => ({ ...h, group: "cultural" })),
-    ...former.map((h) => ({ ...h, group: "former" })),
   ];
   return list
     .filter((h) => h.date.year === year)
     .sort((x, y) => x.date.toJdn() - y.date.toJdn() || (x.kind === "public" ? -1 : y.kind === "public" ? 1 : 0));
 }
 
-/** Monthly commemorations (ወርኃዊ በዓላት), keyed by day of the month. */
+/**
+ * Monthly commemorations (ወርኃዊ በዓላት) of the Ethiopian Orthodox Tewahedo Church,
+ * keyed by day of the month (1–30), as listed by ethiopianorthodox.org. The first
+ * entry is the day's principal commemoration.
+ */
 const MONTHLY = {
-  1: { am: "ልደታ", en: "Lideta (Birth of Mary)" },
-  3: { am: "በዓታ ለማርያም", en: "Ba'eta Mariam (Presentation of Mary)" },
-  5: { am: "አቦ (ገብረ መንፈስ ቅዱስ)", en: "Abo (Gebre Menfes Kidus)" },
-  7: { am: "ሥላሴ", en: "Holy Trinity (Selassie)" },
-  12: { am: "ሚካኤል", en: "St. Michael" },
-  16: { am: "ኪዳነ ምሕረት", en: "Kidane Mehret" },
-  19: { am: "ገብርኤል", en: "St. Gabriel" },
-  21: { am: "ማርያም", en: "St. Mary" },
-  23: { am: "ጊዮርጊስ", en: "St. George" },
-  24: { am: "ተክለ ሃይማኖት", en: "St. Tekle Haymanot" },
-  27: { am: "መድኃኔ ዓለም", en: "Medhane Alem (Saviour of the World)" },
-  29: { am: "በዓለ ወልድ", en: "Bale Wold (Feast of the Son)" },
+  1: [["ልደታ", "Lideta (Birth of Mary)"], ["ራጉኤል", "St. Raguel"], ["ኤልያስ", "Prophet Elijah"]],
+  2: [["ታዴዎስ ሐዋርያ", "Thaddeus the Apostle"], ["ኢዮብ ጻድቅ", "Job the Righteous"]],
+  3: [["በዓታ ማርያም", "Ba'eta Mariam (Presentation of Mary)"], ["ዜና ማርቆስ", "Zena Markos"], ["ነአኩቶ ለአብ", "Na'akueto La'ab"]],
+  4: [["ዮሐንስ ወልደ ነጎድጓድ", "John, Son of Thunder"]],
+  5: [["ጴጥሮስ ወጳውሎስ", "Saints Peter & Paul"], ["አቡነ ገብረ መንፈስ ቅዱስ", "Abune Gebre Menfes Kidus"]],
+  6: [["ኢየሱስ", "Iyesus (Jesus)"], ["ቁስቋም", "Qusqwam"], ["አርሴማ ቅድስት", "St. Arsema"]],
+  7: [["ሥላሴ", "Holy Trinity (Selassie)"], ["ፊሊሞን", "Philemon"], ["አብላንዮስ", "Ablanyos"]],
+  8: [["ማቴዎስ", "Matthew the Evangelist"], ["ዮልያኖስ", "Yolyanos"], ["አባ ኪሮስ", "Abba Kiros"]],
+  9: [["ቶማስ ሐዋርያ", "Thomas the Apostle"], ["እንድርያስ ሐዋርያ", "Andrew the Apostle"], ["አውሳብዮስ", "Eusebius"], ["አርባ ሰማዕታት", "The Forty Martyrs"]],
+  10: [["በዓለ መስቀሉ ለእግዚእነ", "Feast of the Cross of Our Lord"]],
+  11: [["ሃና ወኢያቄም", "Hanna & Joachim"], ["ቅዱስ ፋሲለደስ ሰማዕት", "St. Fasiledes the Martyr"]],
+  12: [["ቅዱስ ሚካኤል", "St. Michael"], ["ክርስቶስ ሠምራ", "Kristos Semra"]],
+  13: [["እግዚአብሔር አብ", "God the Father"], ["ቅዱስ ሩፋኤል ሊቀ መላእክት", "St. Raphael the Archangel"]],
+  14: [["አባ አረጋዊ", "Abba Aregawi"], ["አባ ገብረ ክርስቶስ", "Abba Gebre Kristos"], ["ድምጥያኖስ ሰማዕት", "Dimtyanos the Martyr"]],
+  15: [["ቂርቆስና ኢየሉጣ", "Qirqos & Iyeluta"], ["ስልፋኮስ", "Silfakos"]],
+  16: [["ኪዳነ ምሕረት", "Kidane Mehret"], ["ሚካኤል ጳጳስ", "Michael the Bishop"]],
+  17: [["ቅዱስ እስጢፋኖስ", "St. Stephen"], ["ሉቃስ ዘዓምደ ብርሃን", "Luke of Amde Birhan"]],
+  18: [["ፊልጶስ ሐዋርያ", "Philip the Apostle"], ["ኤስድሮስ ሰማዕት", "Isidore the Martyr"], ["ኤዎስጣጤዎስ ሰማዕት", "Eustathius the Martyr"]],
+  19: [["ቅዱስ ገብርኤል", "St. Gabriel"], ["አርቃዲዎስ", "Arcadius"]],
+  20: [["ጽንሰታ ለማርያም", "Conception of Mary"], ["ነቢዩ ኤልሳ", "Prophet Elisha"], ["ሐጌ ነቢይ", "Prophet Haggai"], ["አባ ሰላማ መተርጉም", "Abba Selama the Translator"]],
+  21: [["በዓለ እግዝእትነ ማርያም", "Feast of Our Lady Mary"]],
+  22: [["ቅዱስ ዑራኤል", "St. Uriel"], ["ያዕቆብ ምሥራቃዊ", "Jacob of the East"], ["ደቅስዮስ", "Deqsyos"]],
+  23: [["ቅዱስ ጊዮርጊስ", "St. George"], ["ለጊኖስ ሰማዕት", "Longinus the Martyr"]],
+  24: [["አቡነ ተክለ ሃይማኖት", "Abune Tekle Haymanot"]],
+  25: [["መርቆሬዎስ", "Merkorewos"], ["አኒፍኖስ", "Anifnos"]],
+  26: [["ሆሴዕ ነቢይ", "Prophet Hosea"], ["ሳዶቅ ሰማዕት", "Zadok the Martyr"]],
+  27: [["መድኃኔዓለም", "Medhane Alem (Saviour of the World)"], ["ሕዝቅያስ ነቢይ", "Prophet Hezekiah"], ["አባ ዮሐንስ", "Abba Yohannes"]],
+  28: [["አማኑኤል", "Amanuel"], ["ቆስጠንጢኖስ", "Constantine"], ["አብርሃም", "Abraham"]],
+  29: [["በዓለ ወልድ", "Bale Wold (Feast of the Son)"], ["ሳሙኤል ዘወገግ", "Samuel of Wegag"]],
+  30: [["ማርቆስ ወንጌላዊ", "Mark the Evangelist"]],
 };
-/** The saint or feast the Orthodox Church commemorates on this day of every month, or null. */
+
+/** The commemorations for this day of the month, principal first, as [{am, en}];
+ *  empty for Pagumē. */
 export function monthlyFeast(date) {
-  return date.month === 13 ? null : MONTHLY[date.day] || null;
+  if (date.month === 13) return [];
+  return MONTHLY[date.day].map(([am, en]) => ({ am, en }));
 }
 
 /** Map of JDN → holidays, for the years a grid may touch. */

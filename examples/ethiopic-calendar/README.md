@@ -15,20 +15,20 @@ numeral and fiscal value comes from the package.
   quarter / period, and distance from today.
 - **Converter** — Gregorian ⇄ Ethiopian, with invalid input reported verbatim from the primitive.
 - **Holidays** — about 48 a year, filterable by group, each tagged as a *public holiday*
-  (a day off), an *observance*, or a *former* holiday:
+  (a day off) or an *observance*:
   - **National:** Enkutatash, Adwa, Labour Day, Patriots' Victory, Ginbot 20, plus
     observances such as Martyrs' Day (Yekatit 12) and Nations, Nationalities & Peoples' Day.
   - **Orthodox:** Meskel, Genna, Timket, the Easter cycle (Hosanna, Siklet, Fasika, Erget,
     Peraklitos, Debre Zeit) and major feasts (Hidar Tsion, Kulubi Gabriel, Filseta,
     Kidane Mehret, …). Julian-based feasts are placed through the package's JDN API.
-    The day panel also shows the monthly commemoration (12th Mikael, 19th Gabriel, …).
+    Every day also shows its monthly commemoration (ወርኃዊ በዓላት) for all 30 days of the
+    month, as listed by ethiopianorthodox.org — the principal saint in the grid, the full
+    list in the day panel.
   - **Islamic:** Eid al-Fitr, Eid al-Adha and Mawlid (public), plus Ramadan, Laylat al-Qadr,
     Arafah, Islamic New Year and Ashura. Dates use the browser's Umm al-Qura calendar
     (falling back to the arithmetic Hijri calendar) and are marked ≈, since Ethiopia
     fixes them by moon sighting.
   - **Cultural:** Irreecha (approximate) and Ashenda / Shadey / Solel.
-  - **Former:** Revolution Day, Coronation Day and Haile Selassie's birthday, shown for
-    reference.
 - **Orthodox fasts** — the seven fasts of the Ethiopian Orthodox Tewahedo Church:
   Abiy Tsom (55 days to Holy Saturday), Nineveh, the Apostles' fast (Monday after
   Pentecost to Hamle 4), Filseta (Nehase 1–15), the Prophets' fast (Hidar 15 to the eve of

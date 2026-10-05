@@ -232,13 +232,13 @@ button:focus-visible, input:focus-visible, select:focus-visible, .day:focus-visi
   -webkit-box-orient: vertical;
 }
 .day .h.obs-only { color: var(--gold); }
-.day .h.former-only { color: var(--faint); font-weight: 500; font-style: italic; }
+.day .h.saint { color: var(--faint); font-weight: 500; }
+.day.selected .h.saint { color: var(--green-ink); opacity: .75; }
 .day.sun .n { color: var(--red); }
 .day.outside { background: transparent; border-style: dashed; }
 .day.outside .n, .day.outside .g, .day.outside .h { opacity: .45; }
 .day.holiday { background: var(--red-soft); border-color: transparent; }
 .day.holiday.obs-only:not(.selected) { background: var(--gold-soft); }
-.day.holiday.former-only:not(.selected) { background: transparent; }
 .day.today { border: 2px solid var(--green); padding: 7px 8px; }
 .day.today::after {
   content: "";
@@ -289,11 +289,10 @@ button:focus-visible, input:focus-visible, select:focus-visible, .day:focus-visi
 .legend i { display: inline-block; width: 14px; height: 10px; border-radius: 3px; }
 .legend .lg-hol { background: var(--red-soft); box-shadow: inset 0 0 0 1px var(--red); }
 .legend .lg-obs { background: var(--gold-soft); box-shadow: inset 0 0 0 1px var(--gold); }
-.legend .lg-former { box-shadow: inset 0 0 0 1px var(--faint); }
 .legend .lg-fast { background: var(--fast-soft); border-top: 3px solid var(--fast); }
 .legend .lg-weekly { height: 0; border-top: 3px dotted var(--fast); border-radius: 0; }
+.legend .toggles { margin-left: auto; display: inline-flex; gap: 14px; flex-wrap: wrap; }
 .legend .switch {
-  margin-left: auto;
   display: inline-flex; align-items: center; gap: 6px;
   color: var(--ink); font-weight: 600; cursor: pointer;
 }
@@ -354,12 +353,15 @@ button:focus-visible, input:focus-visible, select:focus-visible, .day:focus-visi
 .detail .hol b { color: var(--gold); font-weight: 650; }
 .detail .hol.public { background: var(--red-soft); }
 .detail .hol.public b { color: var(--red); }
-.detail .hol.former { background: var(--hover); }
-.detail .hol.former b { color: var(--muted); }
 .detail .hol-meta { color: var(--muted); font-size: 12px; }
 .detail .hol-note { color: var(--muted); font-size: 12px; font-style: italic; }
 .facts { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0; font-size: 13px; }
 .facts dt { color: var(--muted); }
+.monthly { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.monthly h4 { margin: 0 0 6px; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.monthly ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; font-size: 13px; }
+.monthly li::before { content: "✢"; color: var(--gold); margin-right: 7px; font-size: 11px; }
+.monthly li.main { font-weight: 650; }
 .facts dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
 .chip {
   display: inline-block;
@@ -459,8 +461,6 @@ button:focus-visible, input:focus-visible, select:focus-visible, .day:focus-visi
 .holidays button:hover { background: var(--hover); }
 .holidays .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
 .holidays .observance .dot { background: var(--gold); }
-.holidays .former .dot { background: transparent; box-shadow: inset 0 0 0 1.5px var(--faint); }
-.holidays .former .hname { color: var(--muted); font-style: italic; }
 .holidays .hname { display: grid; gap: 1px; }
 .holidays .hname > span:first-child { display: block; }
 .holidays .tag { color: var(--faint); font-size: 11px; font-style: normal; }
@@ -534,5 +534,5 @@ kbd {
   .day.today::after { top: 5px; right: 5px; width: 5px; height: 5px; }
   .kbd-hint { display: none; }
   .day.fast::before, .day.fast-weekly::before { left: 4px; right: 4px; }
-  .legend .switch { margin-left: 0; }
+  .legend .toggles { margin-left: 0; }
 }
