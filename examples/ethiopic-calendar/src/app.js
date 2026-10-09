@@ -501,5 +501,41 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+// --- install as an app (PWA) ------------------------------------------------------------
+// The service worker makes the calendar work offline; the Install button uses the
+// browser's install prompt where it exists (Android/desktop Chrome, Edge) and shows
+// Add-to-Home-Screen steps on iPhone/iPad, where Safari has no prompt.
+const isStandalone = () =>
+  window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+if ("serviceWorker" in navigator && window.isSecureContext) {
+  navigator.serviceWorker.register("./sw.js").catch(() => { /* offline support unavailable */ });
+}
+
+let installPrompt = null;
+const installBtn = $("install-btn");
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  installPrompt = e;
+  if (!isStandalone()) installBtn.hidden = false;
+});
+window.addEventListener("appinstalled", () => {
+  installPrompt = null;
+  installBtn.hidden = true;
+});
+if (isIos && !isStandalone()) installBtn.hidden = false;
+installBtn.addEventListener("click", async () => {
+  if (installPrompt) {
+    installPrompt.prompt();
+    await installPrompt.userChoice.catch(() => null);
+    installPrompt = null;
+    installBtn.hidden = true;
+  } else if (isIos) {
+    $("ios-install").showModal();
+  }
+});
+
 render();
 syncConverter(state.selected);

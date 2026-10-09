@@ -38,6 +38,23 @@ numeral and fiscal value comes from the package.
 - Amharic / English labels, Arabic / Ge'ez numerals, light / dark theme, keyboard
   navigation (arrows, PgUp/PgDn, `T`), and a phone layout.
 
+## Install on a phone
+
+The calendar is a Progressive Web App: it can be installed like a native app and works
+fully offline after the first visit.
+
+- **Android (Chrome, Edge, Samsung Internet):** tap **Install app** in the header, or
+  the browser menu → *Install app* / *Add to Home screen*.
+- **iPhone / iPad (Safari):** tap **Install app** for the steps — Share → *Add to Home
+  Screen* → *Add*.
+- **Desktop (Chrome, Edge):** the install icon in the address bar, or **Install app**.
+
+`manifest.webmanifest` holds the app name, colours and icons (`icons/`); `sw.js`
+precaches every file the app ships and serves them offline, refreshing in the
+background so a new deploy appears on the next launch. Bump `VERSION` in `sw.js` when
+adding or removing files — `test/pwa.test.js` fails if the precache list and the
+shipped files drift apart.
+
 ## Run it locally
 
 ```bash
