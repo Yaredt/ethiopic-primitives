@@ -1,7 +1,9 @@
 name: pages
 
-# Build the static demos and deploy them to GitHub Pages: the Ethiopic Ledger
-# (feature 005) at the site root and the Ethiopian Calendar under /calendar/.
+# Build the static demos and deploy them to GitHub Pages (custom domain
+# zemencalendars.com, set in the repo's Pages settings): Zemen Calendar at the
+# site root, the Ethiopic Ledger (feature 005) under /ledger/, and a redirect at
+# /calendar/ for links from before the move.
 # Both are static consumers of the built @ethiopic-primitives package; it ships
 # under examples/ and is not part of the published package surface.
 
@@ -35,11 +37,13 @@ jobs:
         run: npm run demo:lib
       - name: Run the demo helper tests
         run: node --test examples/ethiopic-ledger/test/*.test.js examples/ethiopic-calendar/test/*.test.js
-      - name: Assemble the site (ledger at /, calendar at /calendar/)
+      - name: Assemble the site (calendar at /, ledger at /ledger/)
         run: |
-          mkdir -p _site/calendar
-          cp -R examples/ethiopic-ledger/. _site/
-          cp -R examples/ethiopic-calendar/. _site/calendar/
+          mkdir -p _site/ledger _site/calendar
+          cp -R examples/ethiopic-calendar/. _site/
+          cp -R examples/ethiopic-ledger/. _site/ledger/
+          rm -rf _site/test _site/ledger/test
+          cp .github/pages/calendar-moved.html _site/calendar/index.html
       - name: Upload the site as the Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

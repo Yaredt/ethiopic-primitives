@@ -3,8 +3,25 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Ethiopian Calendar · ዘመን</title>
-    <meta name="description" content="An offline Ethiopian calendar built on @ethiopic-primitives — 13 months, Pagumē, Ge'ez numerals, national, Orthodox, Islamic and cultural holidays, Orthodox fasting seasons, and fiscal periods." />
+    <title>Zemen Calendar · ዘመን የቀን መቁጠሪያ</title>
+    <meta name="description" content="Zemen Calendar — the Ethiopian calendar with all 13 months, holidays, saints' days, fasting seasons, Ge'ez numerals and a date converter. Free, installable, works offline." />
+    <link rel="canonical" href="https://zemencalendars.com/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Zemen Calendar" />
+    <meta property="og:title" content="Zemen Calendar · ዘመን የቀን መቁጠሪያ" />
+    <meta property="og:description" content="Zemen Calendar — the Ethiopian calendar with all 13 months, holidays, saints' days, fasting seasons, Ge'ez numerals and a date converter. Free, installable, works offline." />
+    <meta property="og:url" content="https://zemencalendars.com/" />
+    <meta property="og:image" content="https://zemencalendars.com/icons/icon-512.png" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="theme-color" content="#1f6b4a" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#12110e" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Zemen" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -12,9 +29,9 @@
 
     <header class="top">
       <div class="brand">
-        <span class="brand-mark" aria-hidden="true">ዘ</span>
+        <span class="brand-mark" aria-hidden="true">፲፫</span>
         <div>
-          <h1>Ethiopian Calendar <span class="am">· የኢትዮጵያ ቀን መቁጠሪያ</span></h1>
+          <h1>Zemen Calendar <span class="am">· ዘመን የቀን መቁጠሪያ</span></h1>
           <p class="today-line" id="today-line"></p>
         </div>
       </div>
@@ -27,6 +44,10 @@
           <button type="button" data-num="arabic" role="radio">123</button>
           <button type="button" data-num="geez" role="radio" title="Ge'ez numerals">፩፪፫</button>
         </div>
+        <button type="button" class="pill install" id="install-btn" hidden>
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/></svg>
+          <span>Install app</span>
+        </button>
         <button type="button" class="icon-btn" id="theme-btn" aria-label="Toggle dark mode" title="Toggle dark mode">
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
         </button>
@@ -100,10 +121,23 @@
     </main>
 
     <footer class="foot">
+      <b>Zemen Calendar</b> · <a href="https://zemencalendars.com/">zemencalendars.com</a> ·
       Offline &amp; deterministic — every conversion, weekday, numeral and fiscal value comes from
       <a href="https://github.com/Yaredt/ethiopic-primitives"><code>ethiopic-primitives</code></a>.
       “Today” is read from your clock only to pick the starting page.
     </footer>
+
+    <dialog id="ios-install" aria-labelledby="ios-install-h">
+      <h3 id="ios-install-h">Add to your Home Screen</h3>
+      <ol>
+        <li>Tap the <b>Share</b> button
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-label="Share icon"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0-12l-4 4m4-4l4 4M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
+          in Safari's toolbar.</li>
+        <li>Scroll down and choose <b>Add to Home Screen</b>.</li>
+        <li>Tap <b>Add</b>. The calendar opens like an app and works offline.</li>
+      </ol>
+      <form method="dialog"><button class="pill">Got it</button></form>
+    </dialog>
 
     <script type="module" src="./src/app.js"></script>
   </body>

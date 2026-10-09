@@ -101,7 +101,9 @@ a { color: var(--green); }
   display: grid; place-items: center;
   background: var(--green);
   color: var(--green-ink);
-  font-size: 24px;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   font-family: "Noto Sans Ethiopic", "Abyssinica SIL", "Nyala", serif;
 }
 h1 { margin: 0; font-size: 20px; letter-spacing: -.01em; font-weight: 650; }
@@ -535,4 +537,29 @@ kbd {
   .kbd-hint { display: none; }
   .day.fast::before, .day.fast-weekly::before { left: 4px; right: 4px; }
   .legend .toggles { margin-left: 0; }
+}
+
+/* --- install ---------------------------------------------------------------- */
+.pill.install {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--green); color: var(--green-ink); border-color: var(--green);
+}
+.pill.install:hover { background: var(--green); filter: brightness(1.08); }
+.pill.install[hidden] { display: none; }
+#ios-install {
+  max-width: min(360px, calc(100vw - 32px));
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px 20px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+#ios-install::backdrop { background: rgba(0, 0, 0, .35); }
+#ios-install h3 { margin: 0 0 10px; font-size: 17px; }
+#ios-install ol { margin: 0 0 14px; padding-left: 20px; display: grid; gap: 8px; font-size: 14px; }
+#ios-install svg { vertical-align: -4px; color: #0a84ff; }
+#ios-install form { text-align: right; }
+@media (display-mode: standalone) {
+  .top { padding-top: max(20px, env(safe-area-inset-top)); }
 }
