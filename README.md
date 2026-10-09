@@ -68,7 +68,7 @@ tests/vectors/folding.json        (pending) authored folding vectors — gates f
 javascript/                       TypeScript calendar + fiscal + numerals + equivalence + runners
 python/                           thin wrapper (calendar) + fiscal + numerals + equivalence
 examples/ethiopic-ledger/         offline demo SPA consuming all four modules (feature 005)
-examples/ethiopic-calendar/       offline Ethiopian calendar UI (month/year views, holidays, converter)
+examples/ethiopic-calendar/       Zemen Calendar — zemencalendars.com (installable, offline)
 tools/reference_ethiopic.py       reference implementation
 tools/full_sweep.py               Principle IX gate (reference oracle)
 tools/fiscal_parity.py            Principle X — JS vs Python fiscal agreement (pre-fixture)

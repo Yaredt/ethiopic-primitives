@@ -1,8 +1,8 @@
 // Service worker: makes the calendar installable and fully usable offline.
-// Strategy: precache the whole app on install, then serve from cache while
+// Strategy: precache the whole app on install, then serve its files from cache while
 // refreshing it in the background (stale-while-revalidate), so a new deploy
 // shows up on the next launch. Bump VERSION when the file list changes.
-const VERSION = "v1";
+const VERSION = "v2";
 const CACHE = `ethcal-${VERSION}`;
 
 const PRECACHE = [
@@ -42,9 +42,16 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+// Only the calendar's own files are handled; anything else on the site (e.g. the
+// Ledger demo at /ledger/, or the /calendar/ redirect) goes straight to the network.
+const SCOPE = new URL(self.registration.scope).pathname;
+const OWN = new Set(PRECACHE.map((p) => new URL(p, self.registration.scope).pathname));
+OWN.add(SCOPE + "index.html");
+
 self.addEventListener("fetch", (event) => {
   const req = event.request;
-  if (req.method !== "GET" || new URL(req.url).origin !== self.location.origin) return;
+  const url = new URL(req.url);
+  if (req.method !== "GET" || url.origin !== self.location.origin || !OWN.has(url.pathname)) return;
 
   event.respondWith(
     caches.open(CACHE).then(async (cache) => {

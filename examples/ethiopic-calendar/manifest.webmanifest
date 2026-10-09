@@ -1,7 +1,8 @@
 {
-  "name": "Ethiopian Calendar · የኢትዮጵያ ቀን መቁጠሪያ",
-  "short_name": "Ethio Calendar",
-  "description": "Ethiopian calendar with holidays, saints' days, fasting seasons, Ge'ez numerals and a date converter. Works offline.",
+  "id": "/",
+  "name": "Zemen Calendar · ዘመን የቀን መቁጠሪያ",
+  "short_name": "Zemen",
+  "description": "The Ethiopian calendar with holidays, saints' days, fasting seasons, Ge'ez numerals and a date converter. Works offline.",
   "lang": "en",
   "start_url": "./",
   "scope": "./",

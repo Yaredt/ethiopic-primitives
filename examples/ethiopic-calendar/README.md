@@ -1,6 +1,6 @@
-# Ethiopian Calendar — demo
+# Zemen Calendar · ዘመን — Ethiopian calendar app
 
-An **offline** Ethiopian calendar UI built on the `@ethiopic-primitives` package. Like the
+**Live at [zemencalendars.com](https://zemencalendars.com/).** An **offline** Ethiopian calendar app built on the `@ethiopic-primitives` package. Like the
 [Ethiopic Ledger](../ethiopic-ledger/), it is an example — not part of the published
 library — and reimplements nothing: every conversion, weekday, leap-year test, Ge'ez
 numeral and fiscal value comes from the package.
@@ -54,6 +54,20 @@ precaches every file the app ships and serves them offline, refreshing in the
 background so a new deploy appears on the next launch. Bump `VERSION` in `sw.js` when
 adding or removing files — `test/pwa.test.js` fails if the precache list and the
 shipped files drift apart.
+
+## Hosting (zemencalendars.com)
+
+`.github/workflows/pages.yml` publishes to GitHub Pages on every push to `main`: the
+calendar at the site root, the Ledger demo at `/ledger/`, and a redirect at
+`/calendar/` for older links. The custom domain is configured once:
+
+1. **DNS at the registrar** for `zemencalendars.com`:
+   - `A` records for `@` → `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
+   - `AAAA` records for `@` → `2606:50c0:8000::153`, `2606:50c0:8001::153`, `2606:50c0:8002::153`, `2606:50c0:8003::153`
+   - `CNAME` record for `www` → `yaredt.github.io`
+2. **GitHub → repo Settings → Pages → Custom domain:** `zemencalendars.com`, save, then
+   tick **Enforce HTTPS** once the certificate is issued.
+3. *(Recommended)* **GitHub → your Settings → Pages → Add a domain** to verify ownership.
 
 ## Run it locally
 

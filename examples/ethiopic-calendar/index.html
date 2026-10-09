@@ -3,8 +3,16 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Ethiopian Calendar · ዘመን</title>
-    <meta name="description" content="An offline Ethiopian calendar built on @ethiopic-primitives — 13 months, Pagumē, Ge'ez numerals, national, Orthodox, Islamic and cultural holidays, Orthodox fasting seasons, and fiscal periods." />
+    <title>Zemen Calendar · ዘመን የቀን መቁጠሪያ</title>
+    <meta name="description" content="Zemen Calendar — the Ethiopian calendar with all 13 months, holidays, saints' days, fasting seasons, Ge'ez numerals and a date converter. Free, installable, works offline." />
+    <link rel="canonical" href="https://zemencalendars.com/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Zemen Calendar" />
+    <meta property="og:title" content="Zemen Calendar · ዘመን የቀን መቁጠሪያ" />
+    <meta property="og:description" content="Zemen Calendar — the Ethiopian calendar with all 13 months, holidays, saints' days, fasting seasons, Ge'ez numerals and a date converter. Free, installable, works offline." />
+    <meta property="og:url" content="https://zemencalendars.com/" />
+    <meta property="og:image" content="https://zemencalendars.com/icons/icon-512.png" />
+    <meta name="twitter:card" content="summary" />
     <link rel="manifest" href="./manifest.webmanifest" />
     <meta name="theme-color" content="#1f6b4a" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#12110e" media="(prefers-color-scheme: dark)" />
@@ -12,7 +20,7 @@
     <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="Ethio Calendar" />
+    <meta name="apple-mobile-web-app-title" content="Zemen" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
@@ -23,7 +31,7 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">፲፫</span>
         <div>
-          <h1>Ethiopian Calendar <span class="am">· የኢትዮጵያ ቀን መቁጠሪያ</span></h1>
+          <h1>Zemen Calendar <span class="am">· ዘመን የቀን መቁጠሪያ</span></h1>
           <p class="today-line" id="today-line"></p>
         </div>
       </div>
@@ -113,6 +121,7 @@
     </main>
 
     <footer class="foot">
+      <b>Zemen Calendar</b> · <a href="https://zemencalendars.com/">zemencalendars.com</a> ·
       Offline &amp; deterministic — every conversion, weekday, numeral and fiscal value comes from
       <a href="https://github.com/Yaredt/ethiopic-primitives"><code>ethiopic-primitives</code></a>.
       “Today” is read from your clock only to pick the starting page.
