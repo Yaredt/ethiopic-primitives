@@ -9,6 +9,8 @@ numeral and fiscal value comes from the package.
 
 - **Month view** — Monday-first grid of the 13 Ethiopian months, each day showing its
   Gregorian date; Pagumē rendered as a real 5- or 6-day month.
+- **Easy navigation** — swipe the calendar left/right on a phone, use the large ‹ › arrows
+  beside the month name, or tap the month name to jump straight to any month and year.
 - **Year view** — all 13 months at a glance, with today and holidays marked.
 - **Day details** — full Ethiopian and Gregorian dates, day of year, leap year,
   evangelist year (ዘመነ ማቴዎስ/ማርቆስ/ሉቃስ/ዮሐንስ), Amete Alem year, fiscal year /
