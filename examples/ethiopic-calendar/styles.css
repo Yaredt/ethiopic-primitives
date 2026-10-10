@@ -179,17 +179,98 @@ button:focus-visible, input:focus-visible, select:focus-visible, .day:focus-visi
 
 /* --- toolbar -------------------------------------------------------------- */
 .toolbar {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 12px;
   margin-bottom: 14px;
 }
-.nav { display: flex; gap: 6px; }
-.title-block { text-align: center; min-width: 0; }
-.title-block h2 { margin: 0; font-size: 26px; letter-spacing: -.015em; font-weight: 700; line-height: 1.2; }
-.title-block h2 .sub { color: var(--muted); font-weight: 450; font-size: .62em; margin-left: 6px; }
-.title-block .span { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.month-nav { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.tools { display: flex; align-items: center; gap: 8px; }
+.nav-arrow {
+  flex: none;
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+}
+.nav-arrow:hover { background: var(--hover); }
+.nav-arrow:active { transform: scale(.94); }
+.title-block { min-width: 0; text-align: center; }
+.title-h { margin: 0; }
+#title-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  max-width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 26px; letter-spacing: -.015em; font-weight: 700; line-height: 1.25;
+}
+#title-btn:hover { background: var(--hover); }
+#title-btn .caret { flex: none; color: var(--muted); }
+#cal-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#cal-title .sub { color: var(--muted); font-weight: 450; font-size: .62em; margin-left: 6px; }
+.title-block .span { margin: 0; color: var(--muted); font-size: 13px; }
+
+/* slide the new month in from the direction of travel */
+@keyframes slide-next { from { transform: translateX(28px); opacity: .25; } to { transform: none; opacity: 1; } }
+@keyframes slide-prev { from { transform: translateX(-28px); opacity: .25; } to { transform: none; opacity: 1; } }
+.slide-next { animation: slide-next .22s ease-out; }
+.slide-prev { animation: slide-prev .22s ease-out; }
+.view { touch-action: pan-y; overflow-x: clip; padding: 0 4px; margin: 0 -4px; }
+
+/* --- month / year picker -------------------------------------------------- */
+#jump {
+  width: min(420px, calc(100vw - 24px));
+  margin: 12vh auto auto;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+#jump::backdrop { background: rgba(0, 0, 0, .35); }
+.jump-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.jump-head h3 { margin: 0; font-size: 17px; }
+.jump-year { display: grid; grid-template-columns: 44px 1fr 44px; gap: 8px; align-items: center; margin-bottom: 12px; }
+.jump-year-label { display: grid; justify-items: center; gap: 2px; font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+.jump-year-label input {
+  width: 100%;
+  text-align: center;
+  font: inherit; font-size: 22px; font-weight: 700; letter-spacing: 0; text-transform: none;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 4px 6px;
+}
+.jump-months { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.jump-months button {
+  position: relative;
+  display: grid; gap: 1px;
+  padding: 10px 6px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  text-align: center;
+}
+.jump-months button:hover { background: var(--hover); }
+.jump-months b { font-size: 15px; font-weight: 650; }
+.jump-months span { font-size: 11px; color: var(--muted); }
+.jump-months .current { background: var(--green); border-color: var(--green); color: var(--green-ink); }
+.jump-months .current span { color: var(--green-ink); opacity: .8; }
+.jump-months .has-today::after {
+  content: ""; position: absolute; top: 7px; right: 7px;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+}
+.jump-months .current.has-today::after { background: var(--green-ink); }
+.jump-months button:last-child { grid-column: 2; }
+.jump-today { display: block; margin: 12px auto 0; }
 
 /* --- month grid ----------------------------------------------------------- */
 .grid {
@@ -524,9 +605,11 @@ kbd {
   .top, .layout, .foot { padding-left: 16px; padding-right: 16px; }
   h1 .am { display: none; }
   .card { padding: 12px; border-radius: 14px; }
-  .toolbar { grid-template-columns: 1fr auto; }
-  .title-block { grid-column: 1 / -1; grid-row: 1; text-align: left; }
-  .title-block h2 { font-size: 22px; }
+  .month-nav { width: 100%; justify-content: space-between; }
+  .title-block { flex: 1; }
+  #title-btn { font-size: 21px; padding: 2px 6px; }
+  #cal-title .sub { display: none; }
+  .tools { width: 100%; justify-content: space-between; }
   .grid { gap: 3px; }
   .day { min-height: 58px; padding: 5px; border-radius: 8px; }
   .day.today { padding: 4px; }

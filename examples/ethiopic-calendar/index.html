@@ -57,29 +57,36 @@
     <main class="layout">
       <section class="cal card" aria-labelledby="cal-title">
         <div class="toolbar">
-          <div class="nav">
-            <button type="button" class="icon-btn" id="prev-btn" aria-label="Previous">
-              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/></svg>
+          <div class="month-nav">
+            <button type="button" class="nav-arrow" id="prev-btn" aria-label="Previous month">
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M15 5l-7 7 7 7"/></svg>
             </button>
-            <button type="button" class="icon-btn" id="next-btn" aria-label="Next">
-              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/></svg>
+            <div class="title-block">
+              <h2 class="title-h">
+                <button type="button" id="title-btn" aria-haspopup="dialog" aria-label="Choose month and year">
+                  <span id="cal-title"></span>
+                  <svg class="caret" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+                </button>
+              </h2>
+              <p class="span" id="cal-span"></p>
+            </div>
+            <button type="button" class="nav-arrow" id="next-btn" aria-label="Next month">
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             </button>
+          </div>
+          <div class="tools">
             <button type="button" class="pill" id="today-btn">Today</button>
-          </div>
-          <div class="title-block">
-            <h2 id="cal-title"></h2>
-            <p class="span" id="cal-span"></p>
-          </div>
-          <div class="seg" role="radiogroup" aria-label="View">
-            <button type="button" data-view="month" role="radio">Month</button>
-            <button type="button" data-view="year" role="radio">Year</button>
+            <div class="seg" role="radiogroup" aria-label="View">
+              <button type="button" data-view="month" role="radio">Month</button>
+              <button type="button" data-view="year" role="radio">Year</button>
+            </div>
           </div>
         </div>
 
         <div id="view" class="view"></div>
 
         <p class="kbd-hint">
-          <kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> move · <kbd>PgUp</kbd><kbd>PgDn</kbd> month · <kbd>T</kbd> today
+          <kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> move · <kbd>PgUp</kbd><kbd>PgDn</kbd> month · <kbd>T</kbd> today · swipe the calendar to change month
         </p>
       </section>
 
@@ -126,6 +133,22 @@
       <a href="https://github.com/Yaredt/ethiopic-primitives"><code>ethiopic-primitives</code></a>.
       “Today” is read from your clock only to pick the starting page.
     </footer>
+
+    <dialog id="jump" aria-labelledby="jump-h">
+      <div class="jump-head">
+        <h3 id="jump-h">Go to</h3>
+        <button type="button" class="icon-btn" id="jump-close" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="jump-year">
+        <button type="button" class="nav-arrow" id="jump-prev-year" aria-label="Previous year"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M15 5l-7 7 7 7"/></svg></button>
+        <label class="jump-year-label"><span>Year</span><input type="number" id="jump-year" inputmode="numeric" /></label>
+        <button type="button" class="nav-arrow" id="jump-next-year" aria-label="Next year"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>
+      </div>
+      <div class="jump-months" id="jump-months"></div>
+      <button type="button" class="pill jump-today" id="jump-today">Today</button>
+    </dialog>
 
     <dialog id="ios-install" aria-labelledby="ios-install-h">
       <h3 id="ios-install-h">Add to your Home Screen</h3>

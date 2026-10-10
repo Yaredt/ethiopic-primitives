@@ -431,7 +431,91 @@ function go(delta) {
     state.year += delta;
   }
   render();
+  slide(delta);
 }
+
+/** Slide the freshly rendered month/year in from the side it came from. */
+function slide(delta) {
+  const el = $("view").firstElementChild;
+  if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  el.classList.remove("slide-next", "slide-prev");
+  void el.offsetWidth; // restart the animation
+  el.classList.add(delta > 0 ? "slide-next" : "slide-prev");
+}
+
+// --- swipe left/right on the calendar to change month (or year) -------------------------
+(() => {
+  const view = $("view");
+  let x0 = 0, y0 = 0, t0 = 0, tracking = false;
+  view.addEventListener("touchstart", (e) => {
+    if (e.touches.length !== 1) { tracking = false; return; }
+    tracking = true;
+    x0 = e.touches[0].clientX;
+    y0 = e.touches[0].clientY;
+    t0 = Date.now();
+  }, { passive: true });
+  view.addEventListener("touchend", (e) => {
+    if (!tracking) return;
+    tracking = false;
+    const dx = e.changedTouches[0].clientX - x0;
+    const dy = e.changedTouches[0].clientY - y0;
+    // A quick, mostly horizontal flick; vertical drags keep scrolling the page.
+    if (Math.abs(dx) > 50 && Math.abs(dx) > 1.5 * Math.abs(dy) && Date.now() - t0 < 800) {
+      go(dx < 0 ? 1 : -1);
+    }
+  }, { passive: true });
+})();
+
+// --- month / year picker (tap the title) -------------------------------------------------
+const jump = { year: state.year };
+function renderJump() {
+  $("jump-h").textContent = state.lang === "am" ? "ወደ ቀን ሂድ" : "Go to";
+  $("jump-year").value = jump.year;
+  $("jump-months").innerHTML = MONTHS.map((m, i) => {
+    const month = i + 1;
+    const cur = state.view === "month" && jump.year === state.year && month === state.month;
+    const isToday = jump.year === today.year && month === today.month;
+    const label = state.lang === "am" ? m.am : m.en;
+    const sub = state.lang === "am" ? m.en : m.am;
+    return `<button type="button" data-jm="${month}" class="${cur ? "current" : ""}${isToday ? " has-today" : ""}"${cur ? ' aria-current="true"' : ""}>
+      <b>${esc(label)}</b><span>${esc(sub)}</span></button>`;
+  }).join("");
+}
+function openJump() {
+  jump.year = state.year;
+  renderJump();
+  $("jump").showModal();
+  const cur = $("jump-months").querySelector(".current") || $("jump-months").firstElementChild;
+  if (cur) cur.focus();
+}
+function closeJump() { $("jump").close(); }
+function jumpTo(year, month) {
+  const before = state.year * 13 + state.month;
+  state.year = year;
+  state.month = month;
+  state.view = "month";
+  savePref("view", "month");
+  closeJump();
+  render();
+  const after = state.year * 13 + state.month;
+  if (after !== before) slide(after - before);
+}
+$("title-btn").addEventListener("click", openJump);
+$("jump-close").addEventListener("click", closeJump);
+$("jump-prev-year").addEventListener("click", () => { jump.year -= 1; renderJump(); });
+$("jump-next-year").addEventListener("click", () => { jump.year += 1; renderJump(); });
+$("jump-year").addEventListener("change", (e) => {
+  const y = parseInt(e.target.value, 10);
+  if (Number.isInteger(y) && y > 0 && y < 10000) { jump.year = y; renderJump(); }
+  else e.target.value = jump.year;
+});
+$("jump-months").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-jm]");
+  if (b) jumpTo(jump.year, Number(b.dataset.jm));
+});
+$("jump-today").addEventListener("click", () => { closeJump(); select(today); });
+// Tapping the dimmed backdrop (outside the panel) closes the picker.
+$("jump").addEventListener("click", (e) => { if (e.target === $("jump")) closeJump(); });
 
 // --- events ---------------------------------------------------------------------------
 document.addEventListener("click", (e) => {
@@ -487,7 +571,7 @@ for (const id of ["conv-eth-year", "conv-eth-month", "conv-eth-day"]) {
 }
 
 document.addEventListener("keydown", (e) => {
-  if (e.target.closest("input, select, textarea") || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.target.closest("input, select, textarea, dialog") || e.metaKey || e.ctrlKey || e.altKey) return;
   const step = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[e.key];
   if (step != null && state.view === "month") {
     e.preventDefault();
