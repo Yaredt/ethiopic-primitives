@@ -21,6 +21,7 @@ import {
   parseIsoDate,
   isoGregorian,
 } from "./model.js";
+import { readingsFor } from "./readings.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -264,7 +265,8 @@ function renderDetail() {
     </div>
     ${hs.map(holidayCard).join("")}
     <dl class="facts">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>
-    ${monthlyBlock(d)}`;
+    ${monthlyBlock(d)}
+    ${readingsBlock(d)}`;
 }
 
 function holidayCard(h) {
@@ -288,6 +290,38 @@ function monthlyBlock(d) {
   return `<div class="monthly">
     <h4>${state.lang === "am" ? "ወርኃዊ በዓል" : "Monthly commemoration"} · ${esc(n(d.day))}</h4>
     <ul>${list.map((m, i) => `<li${i === 0 ? ' class="main"' : ""}>${name(m)}</li>`).join("")}</ul>
+  </div>`;
+}
+
+/** The day's Bible readings from the መጽሐፈ ግጻዌ (draft data in readings.js), when transcribed. */
+function readingsBlock(d) {
+  const r = readingsFor(d);
+  if (!r) return "";
+  const am = state.lang === "am";
+  const ref = (x) => {
+    if (!x.book) return am ? "ምስባክ (ማጣቀሻ)" : "Psalm (cross-reference)";
+    const name = am ? x.book.am : x.book.en;
+    if (x.chapter == null) return name;
+    let s = `${name} ${n(x.chapter)}:${x.verse == null ? "?" : n(x.verse)}`;
+    if (x.end === "EOC") s += am ? " – ፍጻሜ ምዕራፍ" : " – end of chapter";
+    else if (x.end != null) s += x.end < x.verse ? `–${n(x.chapter + 1)}:${n(x.end)}` : `–${n(x.end)}`;
+    return s;
+  };
+  const item = (x) => `<li>
+      <span class="r-kind">${am ? `<span lang="am">${esc(x.kind[0])}</span>` : esc(x.kind[1])}</span>
+      <span class="r-ref">${esc(ref(x))}${x.check ? ` <span class="r-check" title="${am ? "ከመጽሐፉ ጋር ገና አልተመሳከረም" : "Not yet checked against the book"}">?</span>` : ""}</span>
+      <span class="r-inc" lang="gez">${esc(x.incipit)}</span>
+    </li>`;
+  const group = (label, xs) => (xs.length ? `<h5>${label}</h5><ul>${xs.map(item).join("")}</ul>` : "");
+  return `<div class="readings">
+    <h4>${am ? "የዕለቱ ንባባት" : "Readings of the day"}</h4>
+    <p class="r-saint" lang="gez">${esc(r.commemoration)}</p>
+    ${group(am ? "ዘነግህ" : "Morning (ዘነግህ)", r.morning)}
+    ${group(am ? "ዘቅዳሴ" : "Kidase (ዘቅዳሴ)", r.kidase)}
+    ${r.anaphora ? `<p class="r-meta">${am ? "ቅዳሴ" : "Anaphora"}: <span lang="gez">${esc(r.anaphora)}</span></p>` : ""}
+    <p class="r-meta">${am
+      ? "ከመጽሐፈ ግጻዌ። ረቂቅ ነው፤ ገና በሰው አልተረጋገጠም፤ ? ያለበት ቍጥር መመሳከር ይፈልጋል። የሰንበትና የተውሳክ በዓላት ንባባት ገና አልተጨመሩም።"
+      : "From the መጽሐፈ ግጻዌ (lectionary). Draft: not yet checked by a person; ? marks a number to verify. Sunday and movable-feast readings are not included yet."}</p>
   </div>`;
 }
 

@@ -2,7 +2,7 @@
 // Strategy: precache the whole app on install, then serve its files from cache while
 // refreshing it in the background (stale-while-revalidate), so a new deploy
 // shows up on the next launch. Bump VERSION when the file list changes.
-const VERSION = "v2";
+const VERSION = "v3";
 const CACHE = `ethcal-${VERSION}`;
 
 const PRECACHE = [
@@ -12,6 +12,7 @@ const PRECACHE = [
   "manifest.webmanifest",
   "src/app.js",
   "src/model.js",
+  "src/readings.js",
   "lib/index.js",
   "lib/calendar.js",
   "lib/jdn.js",
