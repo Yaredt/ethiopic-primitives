@@ -3193,5 +3193,11 @@ export function formatReference(x, lang) {
   return s;
 }
 
+/** The key of a reading's verse text in passages/NN.json (null for an unresolved reading). */
+export function passageKey(x) {
+  if (!x.book || x.chapter == null || x.verse == null) return null;
+  return `${x.book.key} ${x.chapter}:${x.verse}-${x.end ?? "m"}`;
+}
+
 /** Month numbers (1–13) that have readings. */
 export const READINGS_MONTHS = Object.keys(DATA).map(Number);

@@ -2,7 +2,7 @@
 // Strategy: precache the whole app on install, then serve its files from cache while
 // refreshing it in the background (stale-while-revalidate), so a new deploy
 // shows up on the next launch. Bump VERSION when the file list changes.
-const VERSION = "v3";
+const VERSION = "v4";
 const CACHE = `ethcal-${VERSION}`;
 
 const PRECACHE = [
@@ -48,11 +48,16 @@ self.addEventListener("activate", (event) => {
 const SCOPE = new URL(self.registration.scope).pathname;
 const OWN = new Set(PRECACHE.map((p) => new URL(p, self.registration.scope).pathname));
 OWN.add(SCOPE + "index.html");
+// The verse text (data/passages/NN.json, one file per month) is too big to precache: each
+// month is cached the first time it is used, then served offline like the rest. Narration
+// (data/audio/) is left to the network: browsers fetch audio in ranges, which a cache-first
+// copy would break.
+const own = (path) => OWN.has(path) || path.startsWith(SCOPE + "data/passages/");
 
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
-  if (req.method !== "GET" || url.origin !== self.location.origin || !OWN.has(url.pathname)) return;
+  if (req.method !== "GET" || url.origin !== self.location.origin || !own(url.pathname)) return;
 
   event.respondWith(
     caches.open(CACHE).then(async (cache) => {

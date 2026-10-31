@@ -21,7 +21,7 @@ import {
   parseIsoDate,
   isoGregorian,
 } from "./model.js";
-import { readingsFor } from "./readings.js";
+import { readingsFor, passageKey, READINGS_MONTHS } from "./readings.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -307,14 +307,23 @@ function readingsBlock(d) {
     else if (x.end != null) s += x.end < x.verse ? `–${n(x.chapter + 1)}:${n(x.end)}` : `–${n(x.end)}`;
     return s;
   };
-  const item = (x) => `<li>
+  const head = (x) => `
       <span class="r-kind">${am ? `<span lang="am">${esc(x.kind[0])}</span>` : esc(x.kind[1])}</span>
       <span class="r-ref">${esc(ref(x))}${x.check ? ` <span class="r-check" title="${am ? "ከመጽሐፉ ጋር ገና አልተመሳከረም" : "Not yet checked against the book"}">?</span>` : ""}</span>
-      <span class="r-inc" lang="gez">${esc(x.incipit)}</span>
-    </li>`;
+      <span class="r-inc" lang="gez">${esc(x.incipit)}</span>`;
+  // A reading with a resolvable reference opens to its verses (loaded on first open).
+  const item = (x) => {
+    const key = passageKey(x);
+    if (!key) return `<li><div class="r-row">${head(x)}</div></li>`;
+    return `<li><details class="r-open" data-month="${d.month}" data-key="${esc(key)}">
+      <summary class="r-row">${head(x)}</summary>
+      <div class="passage" aria-live="polite"></div>
+    </details></li>`;
+  };
   const group = (label, xs) => (xs.length ? `<h5>${label}</h5><ul>${xs.map(item).join("")}</ul>` : "");
   return `<div class="readings">
     <h4>${am ? "የዕለቱ ንባባት" : "Readings of the day"}</h4>
+    <p class="r-hint">${am ? "ለማንበብ ንባቡን ይንኩ" : "Tap a reading to read it"}</p>
     <p class="r-saint" lang="gez">${esc(r.commemoration)}</p>
     ${group(am ? "ዘነግህ" : "Morning (ዘነግህ)", r.morning)}
     ${group(am ? "ዘቅዳሴ" : "Kidase (ዘቅዳሴ)", r.kidase)}
@@ -324,6 +333,93 @@ function readingsBlock(d) {
       : "From the መጽሐፈ ግጻዌ (lectionary). Draft: not yet checked by a person; ? marks a number to verify. Sunday and movable-feast readings are not included yet."}</p>
   </div>`;
 }
+
+// --- verse text (data/passages/NN.json, one file per month, fetched on first use) ------
+const passageFiles = new Map();
+function loadPassages(month) {
+  if (!passageFiles.has(month)) {
+    const file = `data/passages/${String(month).padStart(2, "0")}.json`;
+    passageFiles.set(month, fetch(file).then((r) => (r.ok ? r.json() : Promise.reject(new Error(r.status)))));
+    passageFiles.get(month).catch(() => passageFiles.delete(month)); // retry on the next open
+  }
+  return passageFiles.get(month);
+}
+
+/** Fill an opened reading with its verses, in the app's language, with the other one a tap away. */
+async function openPassage(el) {
+  const box = el.querySelector(".passage");
+  if (box.dataset.ready) return;
+  const am = state.lang === "am";
+  box.innerHTML = `<p class="p-msg">${am ? "በመጫን ላይ…" : "Loading…"}</p>`;
+  let doc;
+  try {
+    doc = await loadPassages(Number(el.dataset.month));
+  } catch {
+    box.innerHTML = `<p class="p-msg">${am ? "ጥቅሱን መጫን አልተቻለም። ከመስመር ጋር ሲገናኙ እንደገና ይሞክሩ።" : "Couldn't load the verses. Try again when you're online."}</p>`;
+    return;
+  }
+  const verses = doc.passages[el.dataset.key];
+  if (!verses) {
+    box.innerHTML = `<p class="p-msg">${am ? "የዚህ ንባብ ጥቅስ ገና አልተጨመረም።" : "No verse text for this reading yet."}</p>`;
+    return;
+  }
+  const lines = (lang) => {
+    const out = [];
+    let prevCh = null;
+    for (let i = 0; i < verses.length; i++) {
+      const [ch, v, a, e] = verses[i];
+      const text = lang === "am" ? a : e;
+      if (text === "" || text == null) continue; // joined to the verse before
+      // a verse the Amharic joins with the next ones (e.g. Matthew 2:1–2) shows its range
+      let last = v;
+      for (let j = i + 1; lang === "am" && verses[j] && verses[j][2] === "" && verses[j][0] === ch; j++) last = verses[j][1];
+      const label = (ch !== prevCh ? `${n(ch)}:` : "") + n(v) + (last !== v ? `–${n(last)}` : "");
+      prevCh = ch;
+      out.push(`<p data-i="${i}"><sup>${esc(label)}</sup> ${esc(text)}</p>`);
+    }
+    return out.join("");
+  };
+  const show = am ? "am" : "en";
+  box.dataset.ready = "1";
+  box.dataset.show = show;
+  // Narration (Amharic), when this month has been recorded: data/audio/am/*.mp3 with verse timings.
+  const audio = doc.audio?.[el.dataset.key];
+  box.innerHTML = `
+    ${audio ? `<audio class="p-audio p-am" controls preload="none" src="${esc(audio.src)}"></audio>` : ""}
+    <div class="p-text p-am" lang="am">${lines("am")}</div>
+    <div class="p-text p-en" lang="en">${lines("en")}</div>
+    <div class="p-foot">
+      <button type="button" class="p-swap" data-swap>${am ? "English" : "አማርኛ"}</button>
+      <span class="p-note p-am">${esc(doc.notice.am)}</span>
+      <span class="p-note p-en">${esc(doc.notice.en)}</span>
+    </div>`;
+  if (audio) {
+    // Highlight the verse being read.
+    const player = box.querySelector("audio");
+    const paras = [...box.querySelectorAll(".p-am p[data-i]")];
+    player.addEventListener("timeupdate", () => {
+      const t = player.currentTime;
+      let cur = null;
+      for (const p of paras) if (audio.t[p.dataset.i] <= t) cur = p;
+      for (const p of paras) p.classList.toggle("reading", p === cur && !player.paused);
+    });
+    player.addEventListener("pause", () => paras.forEach((p) => p.classList.remove("reading")));
+  }
+}
+
+document.addEventListener("toggle", (e) => {
+  if (!e.target.matches?.("details.r-open")) return;
+  if (e.target.open) openPassage(e.target);
+  else e.target.querySelector("audio")?.pause();
+}, true);
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-swap]");
+  if (!b) return;
+  const box = b.closest(".passage");
+  const next = box.dataset.show === "am" ? "en" : "am";
+  box.dataset.show = next;
+  b.textContent = next === "am" ? "English" : "አማርኛ";
+});
 
 function fastingFact(d) {
   const fo = fastOn(d);
@@ -630,6 +726,9 @@ const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
 
 if ("serviceWorker" in navigator && window.isSecureContext) {
   navigator.serviceWorker.register("./sw.js").catch(() => { /* offline support unavailable */ });
+  // Fetch this month's verse text in the background so the readings open offline too.
+  const warm = () => { if (READINGS_MONTHS.includes(today.month)) loadPassages(today.month).catch(() => {}); };
+  ("requestIdleCallback" in window ? requestIdleCallback : setTimeout)(warm);
 }
 
 let installPrompt = null;
