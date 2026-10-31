@@ -323,6 +323,7 @@ function readingsBlock(d) {
   const group = (label, xs) => (xs.length ? `<h5>${label}</h5><ul>${xs.map(item).join("")}</ul>` : "");
   return `<div class="readings">
     <h4>${am ? "የዕለቱ ንባባት" : "Readings of the day"}</h4>
+    <p class="r-hint">${am ? "ለማንበብ ንባቡን ይንኩ" : "Tap a reading to read it"}</p>
     <p class="r-saint" lang="gez">${esc(r.commemoration)}</p>
     ${group(am ? "ዘነግህ" : "Morning (ዘነግህ)", r.morning)}
     ${group(am ? "ዘቅዳሴ" : "Kidase (ዘቅዳሴ)", r.kidase)}
