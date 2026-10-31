@@ -44,6 +44,9 @@ jobs:
           cp -R examples/ethiopic-ledger/. _site/ledger/
           rm -rf _site/test _site/ledger/test
           cp .github/pages/calendar-moved.html _site/calendar/index.html
+          # a new service-worker version per deploy, so installed apps pick up the new files
+          sed -i "s/^const VERSION = .*/const VERSION = \"${GITHUB_SHA::12}\";/" _site/sw.js
+          grep -q "${GITHUB_SHA::12}" _site/sw.js
       - name: Upload the site as the Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

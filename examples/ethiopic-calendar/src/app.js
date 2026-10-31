@@ -726,6 +726,14 @@ const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
 
 if ("serviceWorker" in navigator && window.isSecureContext) {
   navigator.serviceWorker.register("./sw.js").catch(() => { /* offline support unavailable */ });
+  // A new deploy's service worker takes over at once (skipWaiting + claim): reload once so
+  // the page shows the new version instead of the copy it was opened from.
+  if (navigator.serviceWorker.controller) {
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!reloaded) { reloaded = true; location.reload(); }
+    });
+  }
   // Fetch this month's verse text in the background so the readings open offline too.
   const warm = () => { if (READINGS_MONTHS.includes(today.month)) loadPassages(today.month).catch(() => {}); };
   ("requestIdleCallback" in window ? requestIdleCallback : setTimeout)(warm);

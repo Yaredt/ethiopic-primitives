@@ -1,8 +1,9 @@
 // Service worker: makes the calendar installable and fully usable offline.
 // Strategy: precache the whole app on install, then serve its files from cache while
 // refreshing it in the background (stale-while-revalidate), so a new deploy
-// shows up on the next launch. Bump VERSION when the file list changes.
-const VERSION = "v4";
+// shows up on the next launch. The Pages deploy stamps VERSION with the commit, so every
+// deploy installs a fresh copy; bump it by hand only for local testing.
+const VERSION = "v5";
 const CACHE = `ethcal-${VERSION}`;
 
 const PRECACHE = [
@@ -30,7 +31,7 @@ const PRECACHE = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)).then(() => self.skipWaiting()),
+    caches.open(CACHE).then((cache) => cache.addAll(PRECACHE.map((p) => new Request(p, { cache: "reload" })))).then(() => self.skipWaiting()),
   );
 });
 
@@ -64,7 +65,8 @@ self.addEventListener("fetch", (event) => {
       // Page loads (with or without a query string) are all served by index.html.
       const key = req.mode === "navigate" ? new URL("index.html", self.registration.scope).href : req;
       const cached = await cache.match(key, { ignoreSearch: true });
-      const network = fetch(req)
+      // revalidate with the server (not the browser's HTTP cache), so a deploy shows up
+      const network = fetch(req.mode === "navigate" ? req : new Request(req, { cache: "no-cache" }))
         .then((res) => {
           if (res.ok) cache.put(key, res.clone());
           return res;
