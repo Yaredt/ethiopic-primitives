@@ -21,7 +21,7 @@ import {
   parseIsoDate,
   isoGregorian,
 } from "./model.js";
-import { readingsFor, passageKey, READINGS_MONTHS } from "./readings.js";
+import { readingsFor, sundayReadingsFor, passageKey, READINGS_MONTHS } from "./readings.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -294,9 +294,18 @@ function monthlyBlock(d) {
 }
 
 /** The day's Bible readings from the መጽሐፈ ግጻዌ (draft data in readings.js), when transcribed. */
+// Fasika of an Ethiopian year (for the Sunday readings), cached per year.
+const fasikaCache = new Map();
+function fasikaOf(year) {
+  if (!fasikaCache.has(year)) fasikaCache.set(year, holidaysFor(year).find((h) => h.en.startsWith("Fasika")).date);
+  return fasikaCache.get(year);
+}
+
 function readingsBlock(d) {
   const r = readingsFor(d);
-  if (!r) return "";
+  // Sundays also get the book's Sunday readings (ግጻዌ ዘሰናብት), placed by draft rules.
+  const sun = d.weekday() === 6 ? sundayReadingsFor(d, fasikaOf(d.year)) : null;
+  if (!r && !sun) return "";
   const am = state.lang === "am";
   const ref = (x) => {
     if (!x.book) return am ? "ምስባክ (ማጣቀሻ)" : "Psalm (cross-reference)";
@@ -312,33 +321,54 @@ function readingsBlock(d) {
       <span class="r-ref">${esc(ref(x))}${x.check ? ` <span class="r-check" title="${am ? "ከመጽሐፉ ጋር ገና አልተመሳከረም" : "Not yet checked against the book"}">?</span>` : ""}</span>
       <span class="r-inc" lang="gez">${esc(x.incipit)}</span>`;
   // A reading with a resolvable reference opens to its verses (loaded on first open).
-  const item = (x) => {
+  const item = (file) => (x) => {
     const key = passageKey(x);
     if (!key) return `<li><div class="r-row">${head(x)}</div></li>`;
-    return `<li><details class="r-open" data-month="${d.month}" data-key="${esc(key)}">
+    return `<li><details class="r-open" data-file="${file}" data-key="${esc(key)}">
       <summary class="r-row">${head(x)}</summary>
       <div class="passage" aria-live="polite"></div>
     </details></li>`;
   };
-  const group = (label, xs) => (xs.length ? `<h5>${label}</h5><ul>${xs.map(item).join("")}</ul>` : "");
+  const group = (label, xs, file) => (xs.length ? `<h5>${label}</h5><ul>${xs.map(item(file)).join("")}</ul>` : "");
+  const services = (x, file) => `
+    ${group(am ? "ዘነግህ" : "Morning (ዘነግህ)", x.morning, file)}
+    ${group(am ? "ዘቅዳሴ" : "Kidase (ዘቅዳሴ)", x.kidase, file)}
+    ${x.anaphora ? `<p class="r-meta">${am ? "ቅዳሴ" : "Anaphora"}: <span lang="gez">${esc(x.anaphora)}</span></p>` : ""}`;
+  let sunday = "";
+  if (sun && sun.missing) {
+    sunday = `<div class="r-sunday">
+      <h4>${am ? "የሰንበት ንባባት" : "Sunday readings"} · <span lang="gez">${esc(sun.missing)}</span></h4>
+      <p class="r-meta">${am ? "የዚህ ሰንበት ንባባት ባለን ቅጂ በጎደለው ገጽ (፻፸፫) ላይ ናቸው።" : "This Sunday's readings are on a page (book page 173) missing from our copy of the book."}</p>
+    </div>`;
+  } else if (sun) {
+    sunday = `<div class="r-sunday">
+      <h4>${am ? "የሰንበት ንባባት" : "Sunday readings"}${sun.mezmur ? ` · <span lang="gez">${esc(sun.mezmur)}</span>` : ""}</h4>
+      ${sun.season ? `<p class="r-saint" lang="gez">${esc(sun.season)}</p>` : ""}
+      ${services(sun, "su")}
+      <p class="r-meta">${am
+        ? "ከግጻዌ ዘሰናብት። የትኛው ሰንበት በየትኛው ቀን እንደሚነበብ ከመጽሐፉ የወቅት መግለጫዎች የተሰላ ረቂቅ ነው፤ ካህናት ሊያረጋግጡት ይገባል።"
+        : "From the Sunday section (ግጻዌ ዘሰናብት). Which Sunday falls on which date is a draft worked out from the book's season lines; clergy should confirm it."}</p>
+    </div>`;
+  }
   return `<div class="readings">
     <h4>${am ? "የዕለቱ ንባባት" : "Readings of the day"}</h4>
     <p class="r-hint">${am ? "ለማንበብ ንባቡን ይንኩ" : "Tap a reading to read it"}</p>
-    <p class="r-saint" lang="gez">${esc(r.commemoration)}</p>
-    ${group(am ? "ዘነግህ" : "Morning (ዘነግህ)", r.morning)}
-    ${group(am ? "ዘቅዳሴ" : "Kidase (ዘቅዳሴ)", r.kidase)}
-    ${r.anaphora ? `<p class="r-meta">${am ? "ቅዳሴ" : "Anaphora"}: <span lang="gez">${esc(r.anaphora)}</span></p>` : ""}
+    ${sunday}
+    ${r ? `<p class="r-saint" lang="gez">${esc(r.commemoration)}</p>
+    ${sun && !sun.missing ? `<h5 class="r-sub">${am ? "የዕለቱ (የወሩ ቀን) ንባባት" : "Readings for the date"}</h5>` : ""}
+    ${services(r, String(d.month).padStart(2, "0"))}` : ""}
     <p class="r-meta">${am
-      ? "ከመጽሐፈ ግጻዌ። ረቂቅ ነው፤ ገና በሰው አልተረጋገጠም፤ ? ያለበት ቍጥር መመሳከር ይፈልጋል። የሰንበትና የተውሳክ በዓላት ንባባት ገና አልተጨመሩም።"
-      : "From the መጽሐፈ ግጻዌ (lectionary). Draft: not yet checked by a person; ? marks a number to verify. Sunday and movable-feast readings are not included yet."}</p>
+      ? "ከመጽሐፈ ግጻዌ። ረቂቅ ነው፤ ገና በሰው አልተረጋገጠም፤ ? ያለበት ቍጥር መመሳከር ይፈልጋል። የተውሳክ በዓላት ንባባት ገና አልተጨመሩም።"
+      : "From the መጽሐፈ ግጻዌ (lectionary). Draft: not yet checked by a person; ? marks a number to verify. Movable-feast readings are not included yet."}</p>
   </div>`;
 }
 
 // --- verse text (data/passages/NN.json, one file per month, fetched on first use) ------
 const passageFiles = new Map();
-function loadPassages(month) {
+function loadPassages(name) {   // "01" … "13", or "su" for the Sunday readings
+  const month = String(name).padStart(2, "0");
   if (!passageFiles.has(month)) {
-    const file = `data/passages/${String(month).padStart(2, "0")}.json`;
+    const file = `data/passages/${month}.json`;
     passageFiles.set(month, fetch(file).then((r) => (r.ok ? r.json() : Promise.reject(new Error(r.status)))));
     passageFiles.get(month).catch(() => passageFiles.delete(month)); // retry on the next open
   }
@@ -353,7 +383,7 @@ async function openPassage(el) {
   box.innerHTML = `<p class="p-msg">${am ? "በመጫን ላይ…" : "Loading…"}</p>`;
   let doc;
   try {
-    doc = await loadPassages(Number(el.dataset.month));
+    doc = await loadPassages(el.dataset.file);
   } catch {
     box.innerHTML = `<p class="p-msg">${am ? "ጥቅሱን መጫን አልተቻለም። ከመስመር ጋር ሲገናኙ እንደገና ይሞክሩ።" : "Couldn't load the verses. Try again when you're online."}</p>`;
     return;
