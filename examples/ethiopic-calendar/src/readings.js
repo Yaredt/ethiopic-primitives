@@ -3,9 +3,10 @@
 //
 // Daily Bible readings of the Ethiopian Orthodox Tewahedo Church from the መጽሐፈ ግጻዌ (the
 // lectionary), fixed calendar only: መስከረም, ጥቅምት, ኅዳር, ታኅሣሥ, ጥር, የካቲት, መጋቢት, ሚያዝያ, ግንቦት, ሰኔ, ሐምሌ, ነሐሴ, ጳጉሜን. DRAFT: transcribed from a scan of the book and not
-// yet checked by a person; 734 of 2977 readings are marked check. Psalms use the Ethiopian
+// yet checked by a person; 755 of 3040 readings are marked check. Psalms use the Ethiopian
 // (Septuagint-like) numbering. SUNDAYS holds the Sunday section (ግጻዌ ዘሰናብት), placed on
-// dates by draft rules (sundayReadingsFor); other movable feasts are not included.
+// dates by draft rules (sundayReadingsFor), and MOVABLE the movable feasts and fasts
+// (movableReadingsFor), placed by days from Fasika.
 // Each day: c = commemoration, a = Kidase anaphora, r = rows of
 // [service, book, chapter, verse, end, check, ref_day, ref_month, incipit].
 
@@ -35622,6 +35623,786 @@ null,
 }
 };
 
+const MOVABLE = {
+"m1":{
+"h":"፩ ዘነነዌ ሰኑይ",
+"s":"ዘነነዌ",
+"a":"ዘእግዚእነ",
+"r":[
+[
+"ቅዳሴ",
+"ROM",
+2,
+1,
+17,
+0,
+null,
+null,
+"እንበለ እመሕያው በምንትኑ ዘትትዌሥእ"
+],
+[
+"ቅዳሴ",
+"JAS",
+5,
+1,
+10,
+1,
+null,
+null,
+"ንዑ ይእዜ አብዕልት እንዘ ትግዕሩ"
+],
+[
+"ቅዳሴ",
+"ACT",
+2,
+37,
+null,
+1,
+null,
+null,
+"ወሰሚዖሙ ተከሥተ ልቦሙ"
+],
+[
+"ቅዳሴ",
+"PSA",
+2,
+12,
+null,
+0,
+null,
+null,
+"ወኢትትኀጐሉ እምፍኖተ ጽድቅ"
+],
+[
+"ቅዳሴ",
+"MAT",
+12,
+38,
+43,
+0,
+null,
+null,
+"ወእምዝ አውሥእዎ ሰብእ"
+]
+]
+},
+"m2":{
+"h":"ዘነነዌ ሠሉስ",
+"s":"ዘነነዌ",
+"a":"ዘእግዚእነ",
+"r":[
+[
+"ቅዳሴ",
+"1CO",
+4,
+1,
+6,
+1,
+null,
+null,
+"ወበዝየ እንከ ይትፈቀድ"
+],
+[
+"ቅዳሴ",
+"1PE",
+1,
+10,
+13,
+0,
+null,
+null,
+"ይእቲኬ መድኃኒት እንተ"
+],
+[
+"ቅዳሴ",
+"ACT",
+8,
+18,
+25,
+0,
+null,
+null,
+"ወሶበ ርእየ ሲሞን"
+],
+[
+"ቅዳሴ",
+"PSA",
+63,
+9,
+null,
+1,
+null,
+null,
+"ወፈርህዎ ኲሉ ሰብእ"
+],
+[
+"ቅዳሴ",
+"LUK",
+11,
+29,
+33,
+0,
+null,
+null,
+"ወእንዘ ጉቡዓን ብዙኃን"
+]
+]
+},
+"m3":{
+"h":"ዘነነዌ ረቡዕ",
+"s":"ዘነነዌ",
+"a":"ዘእግዚእነ",
+"r":[
+[
+"ቅዳሴ",
+"ROM",
+5,
+1,
+6,
+1,
+null,
+null,
+"ጽድቀ እንከ በአሚን"
+],
+[
+"ቅዳሴ",
+"JUD",
+1,
+20,
+"EOC",
+0,
+null,
+null,
+"ወአንትሙሰ አኀዊነ"
+],
+[
+"ቅዳሴ",
+"ACT",
+14,
+8,
+24,
+1,
+null,
+null,
+"ወነበሩ ሀገረ ልስጥራን"
+],
+[
+"ቅዳሴ",
+"PSA",
+41,
+7,
+null,
+0,
+null,
+null,
+"ኲሉ ማዕበልከ ወሞገድከ እንተ ላዕሌየ ኀለፈ"
+],
+[
+"ቅዳሴ",
+"MAT",
+16,
+1,
+5,
+0,
+null,
+null,
+"ወመጽኡ ፈሪሳውያን"
+]
+]
+},
+"m4":{
+"h":"፪ በጾመ ሕርቃል ዘሰኑይ",
+"s":"ጾመ ሕርቃል",
+"a":"ዘኤጲፋንዮስ",
+"r":[
+[
+"ቅዳሴ",
+"ROM",
+12,
+1,
+17,
+0,
+null,
+null,
+"አስተበቍዐክሙ አኀዊነ በሣህሉ ለእግዚአ"
+],
+[
+"ቅዳሴ",
+"1JN",
+5,
+13,
+"EOC",
+0,
+null,
+null,
+"ወዘንተ ጸሐፍኩ ለክሙ ከመ ታእምሩ"
+],
+[
+"ቅዳሴ",
+"ACT",
+25,
+13,
+"EOC",
+0,
+null,
+null,
+"ወእምድኅረ ኀዳጥ መዋዕል ወረደ አግሪጳ"
+],
+[
+"ቅዳሴ",
+"PSA",
+5,
+7,
+null,
+1,
+null,
+null,
+"ብእሴ ደም ወጕሕላዌ ያስቈርር እግዚአብሔር"
+],
+[
+"ቅዳሴ",
+"JHN",
+15,
+12,
+26,
+0,
+null,
+null,
+"ወዛቲ ይእቲ ትእዛዝ አንቲአየ"
+]
+]
+},
+"m5":{
+"h":"፫ በሰኑየ በአተ ጾም ዐቢይ",
+"s":"ጾም ዐቢይ",
+"a":"ዘዲዮስቆሮስ",
+"r":[
+[
+"ቅዳሴ",
+"ROM",
+14,
+10,
+"EOC",
+0,
+null,
+null,
+"አንተ እንከ ምንትኑ አንተ ዘትግእዝ ቢጸከ"
+],
+[
+"ቅዳሴ",
+"1PE",
+4,
+1,
+12,
+0,
+null,
+null,
+"ወእመሰ ክርስቶስ ተሰቅለ በሥጋሁ"
+],
+[
+"ቅዳሴ",
+"ACT",
+18,
+1,
+22,
+0,
+null,
+null,
+"ወእምዝ ወጽአ ጳውሎስ እምአቴና"
+],
+[
+"ቅዳሴ",
+"REF",
+null,
+null,
+null,
+0,
+17,
+1,
+"ወረከብናሁ ውስተ ገዳመ ገዳም (በል ቦ አመ ፲ወ፯ ለመስከረም)"
+],
+[
+"ቅዳሴ",
+"LUK",
+4,
+1,
+16,
+0,
+null,
+null,
+"ወመልአ መንፈስ ቅዱስ ላዕለ ኢየሱስ"
+]
+]
+},
+"m6":{
+"h":"ዘኒቆዲሞስ ረቡዕ",
+"s":"ዘኒቆዲሞስ",
+"a":"ዘጎርጎርዮስ",
+"r":[
+[
+"ቅዳሴ",
+"GAL",
+4,
+12,
+21,
+1,
+null,
+null,
+"አኀዊነ አስተበቍዐክሙ"
+],
+[
+"ቅዳሴ",
+"1JN",
+5,
+1,
+9,
+1,
+null,
+null,
+"ኲሉ ዘየአምን ከመ ኢየሱስ"
+],
+[
+"ቅዳሴ",
+"ACT",
+22,
+16,
+20,
+1,
+null,
+null,
+"ወይእዜኒ ዘከመ ትገብር"
+],
+[
+"ቅዳሴ",
+"REF",
+null,
+null,
+null,
+1,
+null,
+null,
+"ቡሩክ ዘይመጽእ (በል ቦ በሌሊተ ሆሣዕና)"
+],
+[
+"ቅዳሴ",
+"MAT",
+21,
+1,
+14,
+0,
+null,
+null,
+"ወቀርበ ኢየሩሳሌም"
+]
+]
+},
+"m7":{
+"h":"ዘኒቆዲሞስ ሐሙስ",
+"s":"ዘኒቆዲሞስ",
+"a":"ዘጎርጎርዮስ",
+"r":[
+[
+"ቅዳሴ",
+"ROM",
+15,
+7,
+14,
+0,
+null,
+null,
+"ወይእዜኒ ተወከፉ ቢጸክሙ"
+],
+[
+"ቅዳሴ",
+"1PE",
+3,
+10,
+18,
+1,
+null,
+null,
+"ወዘሰ ያፈቅራ ለሕይወት"
+],
+[
+"ቅዳሴ",
+"ACT",
+23,
+1,
+12,
+0,
+null,
+null,
+"ወርእዮ ጳውሎስ"
+],
+[
+"ቅዳሴ",
+"REF",
+null,
+null,
+null,
+1,
+null,
+null,
+"ሀቡ አኰቴተ (በል ቦ እምሆሣዕና)"
+],
+[
+"ቅዳሴ",
+"LUK",
+18,
+35,
+"EOC",
+0,
+null,
+null,
+"ወእምዝ አልጸቆሙ"
+]
+]
+},
+"m8":{
+"h":"፬ ዘዓርብ ተፍጻሜተ ጾመ ፵ ዘውእቱ ተፅዒኖ",
+"s":"ጾመ ፵",
+"a":"ዘጎርጎርዮስ እኁሁ ባስልዮስ",
+"r":[
+[
+"ቅዳሴ",
+"HEB",
+4,
+14,
+"EOC",
+0,
+null,
+null,
+"ወብነ ሊቀ ካህናት ዐቢይ"
+],
+[
+"ቅዳሴ",
+"1PE",
+5,
+5,
+"EOC",
+0,
+null,
+null,
+"ወከማሁ አንትሙሂ ወራዙት ተኰነኑ"
+],
+[
+"ቅዳሴ",
+"ACT",
+19,
+21,
+"EOC",
+0,
+null,
+null,
+"ወእምዝ ተፈጺሞ ዝንቱ ሐለየ ጳውሎስ"
+],
+[
+"ቅዳሴ",
+"PSA",
+null,
+null,
+null,
+1,
+null,
+null,
+"ወኢይትቃወሞከ መንበረ ዓመፃ"
+],
+[
+"ቅዳሴ",
+"MAT",
+4,
+2,
+12,
+0,
+null,
+null,
+"ወጸዊሮ መዋዕለ ፵ መዓልተ ወ፵"
+]
+]
+},
+"m9":{
+"h":"፭ በረቡዕ በ፳ወ፭ ዕለት እምድኅረ ትንሣኤ ዘውእቱ ርክበ ካህናት",
+"s":"ርክበ ካህናት",
+"a":"ዘባስልዮስ",
+"r":[
+[
+"ቅዳሴ",
+"1CO",
+5,
+1,
+"EOC",
+0,
+null,
+null,
+"ወይሰማዕ በላዕሌክሙ ዝሙት"
+],
+[
+"ቅዳሴ",
+"3JN",
+1,
+8,
+"EOC",
+1,
+null,
+null,
+"ወንሕነሰ አኀዊነ ይደልወነ"
+],
+[
+"ቅዳሴ",
+"ACT",
+15,
+22,
+33,
+1,
+null,
+null,
+"ወእምዝ ኀብሩ ሐዋርያት"
+],
+[
+"ቅዳሴ",
+"REF",
+null,
+null,
+null,
+0,
+8,
+1,
+"ካህናቲከ ይለብሱ ጽድቀ (በል ቦ አመ ፰ ለመስከረም)"
+],
+[
+"ቅዳሴ",
+"MAT",
+18,
+12,
+23,
+0,
+null,
+null,
+"ምንት ትብሉ ብእሲ"
+]
+]
+},
+"m10":{
+"h":"፮ ዘዕርገት",
+"s":"ዕርገት",
+"a":"ዘዲዮስቆሮስ",
+"r":[
+[
+"ነግህ",
+"PSA",
+67,
+33,
+null,
+1,
+null,
+null,
+"ዘምሩ ለእግዚአብሔር ዘዐርገ ውስተ ሰማየ ሰማይ"
+],
+[
+"ነግህ",
+"LUK",
+24,
+45,
+"EOC",
+0,
+null,
+null,
+"ወእምዝ ከሠተ ልቦሙ"
+],
+[
+"ቅዳሴ",
+"HEB",
+1,
+1,
+"EOC",
+0,
+null,
+null,
+"በብዙኅ ነገር ወበብዙኅ መክፈልት"
+],
+[
+"ቅዳሴ",
+"1PE",
+3,
+18,
+"EOC",
+0,
+null,
+null,
+"እስመ ክርስቶስኒ ምዕረ ሞተ"
+],
+[
+"ቅዳሴ",
+"ACT",
+1,
+1,
+12,
+1,
+null,
+null,
+"ቀዳሚ ጸሐፍኩ ለከ"
+],
+[
+"ቅዳሴ",
+"PSA",
+46,
+5,
+null,
+0,
+null,
+null,
+"ዐርገ እግዚአብሔር በይባቤ"
+],
+[
+"ቅዳሴ",
+"MRK",
+16,
+14,
+"EOC",
+0,
+null,
+null,
+"ወእምድኅረዝ ካዕበ እንዘ ይረፍቁ"
+]
+]
+},
+"m11":{
+"h":"፯ ዘሰኑይ ጰራቅሊጦስ ዘውእቱ ጾመ ሐዋርያት",
+"s":"ጾመ ሐዋርያት",
+"a":"ዘሐዋርያት",
+"r":[
+[
+"ቅዳሴ",
+"1CO",
+2,
+1,
+"EOC",
+0,
+null,
+null,
+"ወአነ ሶበ መጻእኩ ኀቤክሙ"
+],
+[
+"ቅዳሴ",
+"1JN",
+2,
+26,
+"EOC",
+1,
+null,
+null,
+"ወዘንተ ንጽሕፍ ለክሙ"
+],
+[
+"ቅዳሴ",
+"ACT",
+2,
+22,
+"EOC",
+0,
+null,
+null,
+"ስምዑ ሰብአ እስራኤል"
+],
+[
+"ቅዳሴ",
+"PSA",
+50,
+14,
+null,
+0,
+null,
+null,
+"ይትፌሣሕ ልሳንየ በጽድቀ ዚአከ እግዚኦ"
+],
+[
+"ቅዳሴ",
+"MAT",
+9,
+9,
+18,
+0,
+null,
+null,
+"ወሐሊፎ ኢየሱስ እምህየ"
+]
+]
+},
+"m12":{
+"h":"፰ በዕለተ ምህላ",
+"s":"ምህላ",
+"a":"ዘእግዚእነ",
+"r":[
+[
+"ቅዳሴ",
+"PHP",
+4,
+1,
+10,
+1,
+null,
+null,
+"ወይእዜኒ አኀዊነ ፍቁራን"
+],
+[
+"ቅዳሴ",
+"JAS",
+4,
+1,
+"EOC",
+0,
+null,
+null,
+"እምአይቴ ለክሙ ፀብዕ ወቀትል"
+],
+[
+"ቅዳሴ",
+"1JN",
+5,
+14,
+"EOC",
+0,
+null,
+null,
+"ወዛቲ ይእቲ እንተ ብነ ገጽ በኀቤሁ"
+],
+[
+"ቅዳሴ",
+"ACT",
+14,
+20,
+"EOC",
+0,
+null,
+null,
+"ወበሣኒታ ሖረ ምስለ በርናባስ"
+],
+[
+"ቅዳሴ",
+"PSA",
+64,
+5,
+null,
+0,
+null,
+null,
+"ስምዐነ አምላክነ ወመድኃኒነ"
+],
+[
+"ቅዳሴ",
+"JHN",
+16,
+17,
+"EOC",
+1,
+null,
+null,
+"ወተባሀሉ አርዳኢሁ በበይናቲሆሙ"
+]
+]
+}
+};
+
 const GOSPELS = new Set(["MAT", "MRK", "LUK", "JHN"]);
 const CATHOLIC = new Set(["JAS", "1PE", "2PE", "1JN", "2JN", "3JN", "JUD"]);
 
@@ -35776,6 +36557,28 @@ export function sundayReadingsFor(date, fasika) {
   const all = e.r.map((row) => reading(row, null));   // Sunday cross-references always name their month
   return {
     entry: id, rule, heading: e.h, season: e.s, mezmur: e.mz, anaphora: e.a,
+    morning: all.filter((x) => x.service === "ነግህ"),
+    kidase: all.filter((x) => x.service === "ቅዳሴ"),
+  };
+}
+
+// --- Movable feasts and fasts (በተውሳክ ለሚወጡ ለሚወርዱ በዓላትና አጽዋማት) ----------------------
+// Entries "m<n>" of 14-movable.json, placed by days from Fasika (DRAFT): Nineveh Mon-Wed
+// (-69..-67), the Heraclius fast Monday (-62), the first Monday of Lent (-55), Wednesday
+// and Thursday of Nicodemus week (-11, -10), the Friday ending the forty days (-9), ርክበ
+// ካህናት (+24, "the 25th day after Easter"), Ascension (+39) and the Monday of the Apostles'
+// fast (+50). ፰ በዕለተ ምህላ names no day and is not placed.
+const MOVABLE_DAYS = { "-69": "m1", "-68": "m2", "-67": "m3", "-62": "m4", "-55": "m5",
+  "-11": "m6", "-10": "m7", "-9": "m8", "24": "m9", "39": "m10", "50": "m11" };
+
+/** The movable-feast readings for an Ethiopian date, or null. fasika: {month, day}. */
+export function movableReadingsFor(date, fasika) {
+  const id = MOVABLE_DAYS[doy(date.month, date.day) - doy(fasika.month, fasika.day)];
+  const e = id && MOVABLE[id];
+  if (!e || !e.r.length) return null;
+  const all = e.r.map((row) => reading(row, null));
+  return {
+    entry: id, heading: e.h, group: e.s, anaphora: e.a,
     morning: all.filter((x) => x.service === "ነግህ"),
     kidase: all.filter((x) => x.service === "ቅዳሴ"),
   };

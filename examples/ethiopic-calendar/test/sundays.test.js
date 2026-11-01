@@ -56,3 +56,24 @@ test("every resolvable Sunday reading has verse text in su.json", () => {
     }
   }
 });
+
+test("movable-feast readings land on their days from Fasika (Ascension has a Gospel)", async () => {
+  const { movableReadingsFor } = await import("../src/readings.js");
+  for (const year of [2018, 2019, 2020]) {
+    const fasika = fasikaOf(year);
+    const ascension = movableReadingsFor(fasika.addDays(39), fasika);
+    assert.ok(ascension && [...ascension.morning, ...ascension.kidase].some((x) => x.kind[1] === "Gospel"));
+    assert.equal(movableReadingsFor(fasika.addDays(1), fasika), null);
+    let n = 0;
+    for (let k = -80; k <= 60; k++) if (movableReadingsFor(fasika.addDays(k), fasika)) n++;
+    assert.equal(n, 11, `${year}: 11 movable days`);
+    for (let k = -80; k <= 60; k++) {
+      const r = movableReadingsFor(fasika.addDays(k), fasika);
+      if (!r) continue;
+      for (const x of [...r.morning, ...r.kidase]) {
+        const key = passageKey(x);
+        if (key) assert.ok(su.passages[key]?.length, `${key}: no verse text`);
+      }
+    }
+  }
+});
