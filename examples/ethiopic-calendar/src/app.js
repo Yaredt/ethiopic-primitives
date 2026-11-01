@@ -21,7 +21,7 @@ import {
   parseIsoDate,
   isoGregorian,
 } from "./model.js";
-import { readingsFor, sundayReadingsFor, passageKey, READINGS_MONTHS } from "./readings.js";
+import { readingsFor, sundayReadingsFor, movableReadingsFor, passageKey, READINGS_MONTHS } from "./readings.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -305,7 +305,9 @@ function readingsBlock(d) {
   const r = readingsFor(d);
   // Sundays also get the book's Sunday readings (ግጻዌ ዘሰናብት), placed by draft rules.
   const sun = d.weekday() === 6 ? sundayReadingsFor(d, fasikaOf(d.year)) : null;
-  if (!r && !sun) return "";
+  // Movable feasts and fasts (Nineveh, Lent, ርክበ ካህናት, Ascension …), placed from Fasika.
+  const mov = movableReadingsFor(d, fasikaOf(d.year));
+  if (!r && !sun && !mov) return "";
   const am = state.lang === "am";
   const ref = (x) => {
     if (!x.book) return am ? "ምስባክ (ማጣቀሻ)" : "Psalm (cross-reference)";
@@ -350,16 +352,25 @@ function readingsBlock(d) {
         : "From the Sunday section (ግጻዌ ዘሰናብት). Which Sunday falls on which date is a draft worked out from the book's season lines; clergy should confirm it."}</p>
     </div>`;
   }
+  const movable = mov ? `<div class="r-sunday">
+      <h4>${am ? "የተውሳክ በዓል ንባባት" : "Movable feast readings"} · <span lang="gez">${esc(mov.group || "")}</span></h4>
+      <p class="r-saint" lang="gez">${esc(mov.heading)}</p>
+      ${services(mov, "su")}
+      <p class="r-meta">${am
+        ? "በተውሳክ ለሚወጡ ለሚወርዱ በዓላትና አጽዋማት። ቀኑ ከፋሲካ ተቈጥሮ የተሰላ ረቂቅ ነው፤ ካህናት ሊያረጋግጡት ይገባል።"
+        : "From the book's section on movable feasts and fasts. The day is counted from Fasika as a draft; clergy should confirm it."}</p>
+    </div>` : "";
   return `<div class="readings">
     <h4>${am ? "የዕለቱ ንባባት" : "Readings of the day"}</h4>
     <p class="r-hint">${am ? "ለማንበብ ንባቡን ይንኩ" : "Tap a reading to read it"}</p>
+    ${movable}
     ${sunday}
     ${r ? `<p class="r-saint" lang="gez">${esc(r.commemoration)}</p>
-    ${sun && !sun.missing ? `<h5 class="r-sub">${am ? "የዕለቱ (የወሩ ቀን) ንባባት" : "Readings for the date"}</h5>` : ""}
+    ${(sun && !sun.missing) || mov ? `<h5 class="r-sub">${am ? "የዕለቱ (የወሩ ቀን) ንባባት" : "Readings for the date"}</h5>` : ""}
     ${services(r, String(d.month).padStart(2, "0"))}` : ""}
     <p class="r-meta">${am
-      ? "ከመጽሐፈ ግጻዌ። ረቂቅ ነው፤ ገና በሰው አልተረጋገጠም፤ ? ያለበት ቍጥር መመሳከር ይፈልጋል። የተውሳክ በዓላት ንባባት ገና አልተጨመሩም።"
-      : "From the መጽሐፈ ግጻዌ (lectionary). Draft: not yet checked by a person; ? marks a number to verify. Movable-feast readings are not included yet."}</p>
+      ? "ከመጽሐፈ ግጻዌ። ረቂቅ ነው፤ ገና በሰው አልተረጋገጠም፤ ? ያለበት ቍጥር መመሳከር ይፈልጋል።"
+      : "From the መጽሐፈ ግጻዌ (lectionary). Draft: not yet checked by a person; ? marks a number to verify."}</p>
   </div>`;
 }
 
