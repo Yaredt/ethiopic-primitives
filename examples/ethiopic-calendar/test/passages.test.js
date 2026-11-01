@@ -31,7 +31,10 @@ test("every reading with a reference has verse text in both languages", () => {
         const verses = passages[key];
         assert.ok(Array.isArray(verses) && verses.length > 0, `${m}/${day} ${key}: no verses`);
         assert.equal(verses[0][0], x.chapter, `${key}: starts at its chapter`);
-        assert.equal(verses[0][1], x.verse, `${key}: starts at its verse`);
+        // a ምስባክ may start half a verse early where the Septuagint and Hebrew verse
+        // divisions differ (bibles.py misbak_start); everything else starts as printed
+        const starts = x.end == null && x.book.key === "PSA" ? [x.verse, x.verse - 1] : [x.verse];
+        assert.ok(starts.includes(verses[0][1]), `${key}: starts at its verse`);
         assert.ok(verses[0][2] && verses[0][3], `${key}: first verse has Amharic and English text`);
         for (const v of verses) assert.equal(v.length, 4);
         n++;
