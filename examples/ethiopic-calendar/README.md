@@ -16,13 +16,17 @@ numeral and fiscal value comes from the package.
   evangelist year (ዘመነ ማቴዎስ/ማርቆስ/ሉቃስ/ዮሐንስ), Amete Alem year, fiscal year /
   quarter / period, and distance from today.
 - **Converter** — Gregorian ⇄ Ethiopian, with invalid input reported verbatim from the primitive.
-- **Holidays** — about 48 a year, filterable by group, each tagged as a *public holiday*
+- **Holidays** — about 57 a year, filterable by group, each tagged as a *public holiday*
   (a day off) or an *observance*:
   - **National:** Enkutatash, Adwa, Labour Day, Patriots' Victory, Ginbot 20, plus
     observances such as Martyrs' Day (Yekatit 12) and Nations, Nationalities & Peoples' Day.
   - **Orthodox:** Meskel, Genna, Timket, the Easter cycle (Hosanna, Siklet, Fasika, Erget,
     Peraklitos, Debre Zeit) and major feasts (Hidar Tsion, Kulubi Gabriel, Filseta,
     Kidane Mehret, …). Julian-based feasts are placed through the package's JDN API.
+    Nine more feasts (Tsedenia, Gishen, Qusqam, Kidist Selassie, Lidete Simeon, Megabit
+    Meskel, Medhane Alem, Debre Mitmaq, Tsinseta LeMariam) follow the EOTC Medhane Alem
+    (Toronto) feast list for now and carry a "draft" note until checked against a more
+    authoritative source.
     Every day also shows its monthly commemoration (ወርኃዊ በዓላት) for all 30 days of the
     month, as listed by ethiopianorthodox.org — the principal saint in the grid, the full
     list in the day panel.

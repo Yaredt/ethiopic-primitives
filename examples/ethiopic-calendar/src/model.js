@@ -288,6 +288,19 @@ export function holidaysFor(year) {
     { date: eth(12, 13), am: "ቡሄ (ደብረ ታቦር)", en: "Buhe / Debre Tabor (Transfiguration)", kind: "observance" },
     { date: eth(12, 16), am: "ፍልሰታ ለማርያም", en: "Filseta (Assumption of Mary)", kind: "observance" },
     { date: eth(12, 24), am: "ተክለ ሃይማኖት", en: "St. Tekle Haymanot", kind: "observance" },
+    // From the EOTC Keraneyo Medhane Alem (Toronto) list "Order of Church Feasts and
+    // Calendar"; to be checked against a more authoritative source.
+    ...[
+      [1, 10, "ጽዴንያ ማርያም", "Tsedenia Mariam (Icon of St. Mary)"],
+      [1, 21, "ግሸን ማርያም", "Gishen Mariam (the True Cross at Gishen)"],
+      [3, 6, "ቁስቋም", "Qusqam (return of the Holy Family)"],
+      [5, 7, "ቅድስት ሥላሴ", "Kidist Selassie (Holy Trinity)"],
+      [6, 8, "ልደተ ስምዖን", "Lidete Simeon (Presentation of the Lord)"],
+      [7, 10, "መስቀል (መጋቢት)", "Megabit Meskel (the Cross found by St. Helena)"],
+      [7, 27, "መድኃኔ ዓለም", "Medhane Alem (original day of the Crucifixion)"],
+      [9, 21, "ደብረ ምጥማቅ", "Debre Mitmaq (appearance of St. Mary)"],
+      [12, 7, "ጽንሰታ ለማርያም", "Tsinseta LeMariam (Conception of St. Mary)"],
+    ].map(([m, d, am, en]) => ({ date: eth(m, d), am, en, kind: "observance", note: "Source: EOTC Medhane Alem, Toronto (draft)." })),
   ];
   const cultural = [
     { date: irreecha, am: "ኢሬቻ", en: "Irreecha (Oromo thanksgiving)", kind: "observance", estimated: true,
