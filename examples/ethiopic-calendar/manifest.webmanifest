@@ -2,7 +2,7 @@
   "id": "/",
   "name": "Zemen Calendar · ዘመን የቀን መቁጠሪያ",
   "short_name": "Zemen",
-  "description": "The Ethiopian calendar with holidays, saints' days, fasting seasons, Ge'ez numerals and a date converter. Works offline.",
+  "description": "The Ethiopian calendar with holidays, saints' days, fasting seasons, the daily Bible readings of the Ethiopian Orthodox Church, Ge'ez numerals and a date converter. Works offline.",
   "lang": "en",
   "start_url": "./",
   "scope": "./",

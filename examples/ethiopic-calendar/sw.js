@@ -9,6 +9,7 @@ const CACHE = `ethcal-${VERSION}`;
 const PRECACHE = [
   "./",
   "index.html",
+  "privacy.html",
   "styles.css",
   "manifest.webmanifest",
   "src/app.js",
